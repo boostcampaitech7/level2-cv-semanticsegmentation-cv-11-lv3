@@ -26,29 +26,26 @@ class XRayTrainDataset(Dataset):
         ind2class (dict): 인덱스를 클래스 이름으로 매핑하는 딕셔너리
         data_cache (dict): 캐싱할 데이터를 저장하는 딕셔너리
     '''
-    def __init__(self, root_dir, pngs, jsons=None, is_train=True, 
-                 transforms=None, cache_data=False, n=5, split_idx=0 ,classes=None):
+    def __init__(self, root_dir, fold_df, is_train=True, 
+                 transforms=None, cache_data=False ,classes=None):
+        
+        data_type = 'train' if is_train else 'val'
+        
         self.root_dir = root_dir
-        self.filenames = pngs
-        self.labelnames = jsons
+        self.filenames = fold_df[fold_df["split"]==data_type]["image_name"].tolist()
+        self.labelnames = fold_df[fold_df["split"]==data_type]["json_name"].tolist()
         self.is_train = is_train
         self.transforms = transforms
         self.cache_data = cache_data
         self.classes = classes
-        self.split_idx = split_idx
         
         self.class2ind = dict(zip(classes, range(len(classes))))
         
         self.image_dir = root_dir + "/train/DCM" 
         self.json_dir = root_dir + "/train/outputs_json"
+
+
         
-        groups = [os.path.dirname(file) for file in self.filenames]
-        dummy = [0 for _ in self.filenames]
-        gkf = GroupKFold(n_splits=n)
-        
-        self.filenames, self.labelnames = self.split_data(gkf, self.filenames, 
-                                                         self.labelnames, dummy,
-                                                         groups, self.split_idx)
         self.data_cache = {} if cache_data else None
         
     def __len__(self):
@@ -57,32 +54,6 @@ class XRayTrainDataset(Dataset):
         '''
         return len(self.filenames)
     
-    def split_data(self, gkf, filenames, labelnames, dummy, groups, split_index) -> tuple:
-        """
-        GroupKFold를 사용하여 데이터를 훈련/검증으로 분할합니다.
-
-        Args:
-            gkf (GroupKFold): GroupKFold 객체
-            filenames (list): PNG 파일 리스트
-            labelnames (list): JSON 파일 리스트
-            dummy (list): 더미 레이블 리스트
-            groups (list): 그룹 정보 리스트
-            split_index (int): 사용할 폴드의 인덱스
-
-        Returns:
-            tuple: (파일, 라벨 리스트)
-        """
-        splits = list(gkf.split(filenames, dummy, groups))
-        if split_index >= len(splits):
-            raise ValueError(f"split_index {split_index} is out of range for n_splits {len(splits)}")
-
-        train_idx, val_idx = splits[split_index]
-        if self.is_train:
-            return ([filenames[idx] for idx in train_idx], 
-                    [labelnames[idx] for idx in train_idx])
-        else:
-            return ([filenames[idx] for idx in val_idx], 
-                    [labelnames[idx] for idx in val_idx])
         
     def load_data(self, img_path, label_path) -> tuple:
         """
