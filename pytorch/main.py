@@ -5,6 +5,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import models
 import albumentations as A
+import pandas as pd
 
 from utils.util import set_seed, find_file, save_ckpt, save_best
 from transform.transform import get_transform
@@ -17,12 +18,14 @@ from train.test import test
 
 # 1. 하이퍼파라미터 설정
 ROOT_PATH = "/data/ephemeral/home"
+FOLD_PATH = "/data/ephemeral/home/folds"
 BATCH_SIZE = 16
 LR = 5e-4
 RANDOM_SEED = 21
-NUM_EPOCHS = 5
+NUM_EPOCHS = 1
 VAL_EVERY = 1
 SAVE_DIR = "checkpoints"
+FOLDNUM = 2
 
 CLASSES = [
     'finger-1', 'finger-2', 'finger-3', 'finger-4', 'finger-5',
@@ -37,39 +40,41 @@ IND2CLASS = {i: cls for i, cls in enumerate(CLASSES)}
 
 set_seed(RANDOM_SEED)
 
-train_pngs = sorted(find_file(os.path.join(ROOT_PATH, "train/DCM"), ".png"))
-train_jsons = sorted(find_file(os.path.join(ROOT_PATH, "train/outputs_json"), ".json"))
+fold_path = f'fold_{FOLDNUM}.csv'
+fold_df = pd.read_csv(os.path.join(FOLD_PATH,fold_path))
+
+# train_pngs = sorted(find_file(os.path.join(ROOT_PATH, "train/DCM"), ".png"))
+# train_jsons = sorted(find_file(os.path.join(ROOT_PATH, "train/outputs_json"), ".json"))
 test_pngs = find_file(os.path.join(ROOT_PATH, "test/DCM"), ".png")
 
-print(f"Number of PNG files: {len(train_pngs)}")
-print(f"Number of JSON files: {len(train_jsons)}")
+
 print(f"Number of JSON files: {len(test_pngs)}")
+
+
+
 
 transform_list = [A.Resize(512, 512)]
 transforms = get_transform(transform_list)
 
+
+
+
 train_dataset = XRayTrainDataset(
     root_dir=ROOT_PATH,
-    pngs=train_pngs,
-    jsons=train_jsons,
+    fold_df = fold_df,
     is_train=True,
     transforms=transforms,
     cache_data=False,
-    n=5,
     classes=CLASSES,
-    split_idx=0
 )
 
 valid_dataset = XRayTrainDataset(
     root_dir=ROOT_PATH,
-    pngs=train_pngs,
-    jsons=train_jsons,
+    fold_df = fold_df,
     is_train=False,
     transforms=transforms,
     cache_data=False,
-    n=5,
     classes=CLASSES,
-    split_idx=0
 )
 
 test_dataset = XRayInferenceDataset(
@@ -102,30 +107,31 @@ criterion = combine_loss
 optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=1e-6)
 
 def main():
+    print(f"FOLD NUMBER: FOLD_{FOLDNUM}")
     print("학습 시작...")
     best_dice = 0.0
 
-    # train(
-    #     model=model,
-    #     num_epoch=NUM_EPOCHS,
-    #     data_loader=train_loader,
-    #     val_step=VAL_EVERY,
-    #     val_loader=valid_loader,
-    #     criterion=criterion,
-    #     optimizer=optimizer,
-    #     save_dir=SAVE_DIR,
-    #     classes=CLASSES
-    # )
+    train(
+        model=model,
+        num_epoch=NUM_EPOCHS,
+        data_loader=train_loader,
+        val_step=VAL_EVERY,
+        val_loader=valid_loader,
+        criterion=criterion,
+        optimizer=optimizer,
+        save_dir=SAVE_DIR,
+        classes=CLASSES
+    )
 
     print("학습 완료.")
-    best_model_path = os.path.join(SAVE_DIR, 'best.pt')
-    model = torch.load(best_model_path)
+    # best_model_path = os.path.join(SAVE_DIR, 'best.pt')
+    # model = torch.load(best_model_path)
     
-    print("테스트 데이터로 추론 시작...")
-    rles, filename_and_class = test(model, test_loader, IND2CLASS)
+    # print("테스트 데이터로 추론 시작...")
+    # rles, filename_and_class = test(model, test_loader, IND2CLASS)
 
-    inference_save(rles, filename_and_class, os.path.join(ROOT_PATH, "test/DCM"), CLASSES) # 현재 오류 있음
-    inference_to_csv(filename_and_class, rles)
+    # inference_save(rles, filename_and_class, os.path.join(ROOT_PATH, "test/DCM"), CLASSES) # 현재 오류 있음
+    # inference_to_csv(filename_and_class, rles)
 
 if __name__ == "__main__":
     main()
