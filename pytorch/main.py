@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from torchvision import mod
+from torchvision import models
 import albumentations as A
 import pandas as pd
 
@@ -114,7 +114,6 @@ def main():
     print("학습 시작...")
     best_dice = 0.0
     mlflow_manager =MLflowManager(experiment_name=exp_name)
-    run_name=run_name
     train(
         model=model,
         num_epoch=NUM_EPOCHS,
