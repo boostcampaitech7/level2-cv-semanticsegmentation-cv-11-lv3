@@ -119,7 +119,7 @@ def read_annotations(json_path) -> dict:
     with open(json_path,'r') as f:
         return json.load(f)['annotations']
     
-def inference_save(rles, filename_and_class, image_root, save_dir="inference_results", num_samples=10):
+def inference_save(filename_and_class, image_root, image_size, result_df, save_dir="inference_results", num_samples=10):
     """
     인퍼런스 결과 이미지를 저장
 
@@ -143,7 +143,11 @@ def inference_save(rles, filename_and_class, image_root, save_dir="inference_res
         try:
             # 이미지 이름 추출
             image_name = image_names[idx]
+
             image_path = os.path.join(image_root, image_name)
+
+            name_only = list(image_name.split('/'))[-1]
+            rles = result_df[result_df['image_name'] == name_only]['rle'].tolist()
 
             # 이미지 읽기
             image = cv2.imread(image_path)
@@ -156,20 +160,17 @@ def inference_save(rles, filename_and_class, image_root, save_dir="inference_res
 
             # 예측 마스크 생성
             preds = []
-            for class_idx, class_name in enumerate(classes):
-                rle_index = idx * len(classes) + class_idx
-                rle = rles[rle_index]
-                if rle is not None and rle != "":
-                    pred = decode_rle_to_mask(rle, 2048, 2048)
-                    # 예측 마스크를 원본 이미지 크기로 리사이즈
-                    pred = cv2.resize(pred, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST)
-                else:
-                    pred = np.zeros((orig_h, orig_w), dtype=np.uint8)
+
+            for rle in rles[:len(get_classes())]:
+                pred = decode_rle_to_mask(rle, orig_h, orig_w)
                 preds.append(pred)
 
-            # 예측 결과를 RGB 이미지로 변환
+
             preds = np.stack(preds, axis=0)
             pred_rgb = label2rgb(preds)
+
+            print(pred_rgb.shape)
+            print(image.shape)
 
             # 원본 이미지와 예측 결과 시각화
             viz = np.hstack((image, pred_rgb))
@@ -193,7 +194,7 @@ def inference_save(rles, filename_and_class, image_root, save_dir="inference_res
 
     print("인퍼런스 결과 저장이 완료되었습니다.")
     
-def inference_to_csv(filename_and_class, rles, output_path = './results', output_name="output.csv"):
+def inference_to_csv(filename_and_class, rles, path = './results', output_name="output.csv"):
     """
     인퍼런스 결과를 CSV 파일로 저장
 
@@ -210,7 +211,13 @@ def inference_to_csv(filename_and_class, rles, output_path = './results', output
         "class": classes,
         'rle': rles,
     })
-    df.to_csv(output_name, index=False)
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    df.to_csv(os.path.join(path, output_name), index=False)
+
+    return df
 
 
 def get_classes():
@@ -223,3 +230,9 @@ def get_classes():
             'Triquetrum', 'Pisiform', 'Radius', 'Ulna',
         ]
     return classes
+
+def get_CLASS2IND():
+    return {cls: i for i, cls in enumerate(get_classes())}
+
+def get_IND2CLASS():
+    return {i: cls for i, cls in enumerate(get_classes())}

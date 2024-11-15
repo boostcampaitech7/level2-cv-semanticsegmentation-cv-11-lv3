@@ -2,7 +2,6 @@
 image_root: /data/ephemeral/home/train/DCM
 fold_root: /data/ephemeral/home/folds
 label_root: /data/ephemeral/home/train/outputs_json
-test_root: /data/ephemeral/home/train/DCM
 fold_list: [2,]
 
 # 모델명 및 사전 학습 여부
@@ -30,11 +29,12 @@ transform:
 lr: 5e-4
 weight_decay: 1e-6
 
-max_epoch: &max_epoch 50
+max_epoch: &max_epoch 1
 
 # loss 관련 설정
-loss_name: [BCEWithLogitsLoss, DICE]
-
+loss: 
+  type: CombineLoss             # CombineLoss / Default
+  loss_list: [binary_cross_entropy_with_logits, dice]
 # loss에 필요한 parameter -> dict 형태로 작성
 loss_parameter: {}
 
