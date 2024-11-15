@@ -32,7 +32,7 @@ class Trainer:
                  optimizer: optim.Optimizer,
                  save_dir: str,
                  scheduler: optim.lr_scheduler,
-                 fold_num: int,
+                 cur_fold: str,
                  mlflow_manager,
                  run_name,
                  num_class,):
@@ -46,7 +46,7 @@ class Trainer:
         self.max_epoch = max_epoch
         self.save_dir = save_dir
         self.val_interval = val_interval
-        self.fold_num = fold_num
+        self.cur_fold = cur_fold
         self.mlflow_manager = mlflow_manager
         self.run_name = run_name
         self.num_class = num_class
@@ -59,7 +59,7 @@ class Trainer:
         if before_path != "" and osp.exists(before_path):
             os.remove(before_path)
 
-        output_path = osp.join(self.save_dir, f"fold{self.fold_num}_best_{epoch}epoch_{dice_score:.4f}.pt")
+        output_path = osp.join(self.save_dir, f"{self.cur_fold}_best_{epoch}epoch_{dice_score:.4f}.pt")
         torch.save(self.model, output_path)
         return output_path
 
@@ -69,7 +69,7 @@ class Trainer:
         self.model.train()
         total_loss = 0.0
 
-        with tqdm(total=len(self.train_loader), desc=f"FOLD_{self.fold_num}[Training Epoch {epoch}]", disable=False) as pbar:
+        with tqdm(total=len(self.train_loader), desc=f"{self.cur_fold}[Training Epoch {epoch}]", disable=False) as pbar:
             for images, masks in self.train_loader:
                 images, masks = images.cuda(), masks.cuda()
 
@@ -102,7 +102,7 @@ class Trainer:
         dices = []
 
         with torch.no_grad():
-            with tqdm(total=len(self.val_loader), desc=f'FOLD_{self.fold_num}[Validation Epoch {epoch}]', disable=False) as pbar:
+            with tqdm(total=len(self.val_loader), desc=f'{self.cur_fold}[Validation Epoch {epoch}]', disable=False) as pbar:
                 for images, masks in self.val_loader:
                     images, masks = images.cuda(), masks.cuda()
                     outputs = self.model(images)['out']
@@ -175,6 +175,6 @@ class Trainer:
                 if best_dice < avg_dice:
                     print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                     best_dice = avg_dice
-                    save_best(self.model, self.save_dir)
+                    save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
 
             self.scheduler.step()

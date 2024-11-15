@@ -71,7 +71,7 @@ def find_file(root_path, extension:str) -> set:
     }
     return result
 
-def save_best(model, save_dir, file_name='best.pt'):
+def save_best(model, save_dir, cur_fold, file_name='best.pt'):
     '''
     전체 모델을 저장합니다
     
@@ -84,6 +84,7 @@ def save_best(model, save_dir, file_name='best.pt'):
         None
     '''
     os.makedirs(save_dir, exist_ok=True)
+    file_name = f'{cur_fold}_'+file_name
     output_path = os.path.join(save_dir, file_name)
     torch.save(model, output_path)
     print(f"최종 모델이 {output_path}에 저장되었습니다.")
@@ -118,7 +119,7 @@ def read_annotations(json_path) -> dict:
     with open(json_path,'r') as f:
         return json.load(f)['annotations']
     
-def inference_save(rles, filename_and_class, image_root, classes, save_dir="inference_results", num_samples=10):
+def inference_save(rles, filename_and_class, image_root, save_dir="inference_results", num_samples=10):
     """
     인퍼런스 결과 이미지를 저장
 
@@ -132,6 +133,7 @@ def inference_save(rles, filename_and_class, image_root, classes, save_dir="infe
     """
     # 저장 디렉토리 생성
     os.makedirs(save_dir, exist_ok=True)
+    classes = get_classes()
 
     # 샘플 개수 설정 (중복 없이 이미지 이름만 사용)
     image_names = list(set([x.split("_", 1)[1] for x in filename_and_class]))
@@ -191,7 +193,7 @@ def inference_save(rles, filename_and_class, image_root, classes, save_dir="infe
 
     print("인퍼런스 결과 저장이 완료되었습니다.")
     
-def inference_to_csv(filename_and_class, rles, output_name="output.csv"):
+def inference_to_csv(filename_and_class, rles, output_path = './results', output_name="output.csv"):
     """
     인퍼런스 결과를 CSV 파일로 저장
 

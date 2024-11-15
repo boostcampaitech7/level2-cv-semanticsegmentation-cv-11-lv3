@@ -11,20 +11,14 @@ from omegaconf import OmegaConf
 import gc
 from utils.mlflow import MLflowManager
 
-from utils.util import set_seed, find_file, get_classes, save_ckpt, save_best
+from utils.util import set_seed, find_file, get_classes
 from transform.transform import get_transform
 from data.train_dataset import XRayTrainDataset
 from data.test_dataset import XRayInferenceDataset
-from loss.loss import combine_loss
 from trainer.trainer import Trainer
 from scheduler.scheduler_selector import SchedulerSelector
 from loss.loss_selector import LossSelector
-# from utils.util import inference_save, inference_to_csv
-# from train.test import test
 
-# 1. 하이퍼파라미터 설정
-
-# IND2CLASS = {i: cls for i, cls in enumerate(CLASSES)}
 
 def initialize_model(num_classes):
     model = models.segmentation.fcn_resnet50(pretrained=True)
@@ -53,8 +47,8 @@ def main(cfg):
     mlflow_manager = MLflowManager(experiment_name=cfg.exp_name)
 
     for fold_df in folds:
-        fold_num = fold_df.iloc[0]["fold"]
-        print(f"--------Current Fold: {fold_num}----------")
+        cur_fold = fold_df.iloc[0]["fold"]
+        print(f"--------Current Fold: {cur_fold}----------")
 
         model = initialize_model(cfg.model_parameter.classes)
         model = model.cuda()
@@ -108,7 +102,7 @@ def main(cfg):
                     optimizer=optimizer,
                     save_dir=cfg.save_dir,
                     scheduler=scheduler,
-                    fold_num = fold_num,
+                    cur_fold = cur_fold,
                     mlflow_manager = mlflow_manager,
                     run_name = cfg.run_name,
                     num_class = cfg.model_parameter.classes,

@@ -1,7 +1,7 @@
 import torch
 from tqdm.auto import tqdm
 import torch.nn.functional as F
-from train.test_rle import encode_mask_to_rle
+from trainer.test_rle import encode_mask_to_rle
 
 def test(model, data_loader, ind2class, thr=0.5):
     model = model.cuda()
