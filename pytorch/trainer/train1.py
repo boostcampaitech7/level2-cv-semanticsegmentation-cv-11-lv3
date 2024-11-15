@@ -61,9 +61,7 @@ def train(model, num_epoch, data_loader, val_step, val_loader, criterion, optimi
         running_loss = 0.0
         pbar = tqdm(data_loader, desc=f"epoch [{epoch+1}/{num_epoch}]")
         for step, (images, masks) in enumerate(pbar):
-            images, masks = images.cuda(), masks.cuda()
             
-            outputs = model(images)['out']
             
             loss = criterion(outputs, masks)
             optimizer.zero_grad()

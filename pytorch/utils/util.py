@@ -4,7 +4,7 @@ import random
 import os
 import json
 import cv2
-from train.test_rle import decode_rle_to_mask
+from trainer.test_rle import decode_rle_to_mask
 import pandas as pd
 from tqdm.auto import tqdm
 
@@ -209,3 +209,15 @@ def inference_to_csv(filename_and_class, rles, output_name="output.csv"):
         'rle': rles,
     })
     df.to_csv(output_name, index=False)
+
+
+def get_classes():
+    classes = [
+            'finger-1', 'finger-2', 'finger-3', 'finger-4', 'finger-5',
+            'finger-6', 'finger-7', 'finger-8', 'finger-9', 'finger-10',
+            'finger-11', 'finger-12', 'finger-13', 'finger-14', 'finger-15',
+            'finger-16', 'finger-17', 'finger-18', 'finger-19', 'Trapezium',
+            'Trapezoid', 'Capitate', 'Hamate', 'Scaphoid', 'Lunate',
+            'Triquetrum', 'Pisiform', 'Radius', 'Ulna',
+        ]
+    return classes
