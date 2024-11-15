@@ -51,33 +51,41 @@ def validation(epoch, model, data_loader, criterion, classes, thr=0.5):
     avg_dice = torch.mean(dices_per_class).item()
     return avg_dice
 
-def train(model, num_epoch, data_loader, val_step, val_loader, criterion, optimizer, save_dir, classes):
+def train(model, num_epoch, data_loader, val_step, val_loader, criterion, optimizer, save_dir, classes,mlflow_manager,run_name):
     n_class = len(classes)
     best_dice = 0
     model.cuda()
-    
-    for epoch in range(num_epoch):
-        model.train()
-        running_loss = 0.0
-        pbar = tqdm(data_loader, desc=f"epoch [{epoch+1}/{num_epoch}]")
-        for step, (images, masks) in enumerate(pbar):
-            images, masks = images.cuda(), masks.cuda()
-            
-            outputs = model(images)['out']
-            
-            loss = criterion(outputs, masks)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            
-            running_loss += loss.item()
-            
-            pbar.set_postfix(loss=round(loss.item(), 4))
-            
-        if (epoch + 1) % val_step == 0:
-            dice = validation(epoch +1, model, val_loader, criterion, classes)
-            
-            if best_dice < dice:
-                print(f"Best epoch : epoch {epoch + 1}, {best_dice:.4f} -> {dice:.4f}")
-                best_dice = dice
-                save_best(model, save_dir)
+    with mlflow_manager.start_run(run_name=run_name):
+        mlflow_manager.log_params({
+            "num_epoch": num_epoch,
+            "val_step": val_step,
+            "n_classes": n_class,
+            "save_dir": save_dir,
+            "optimizer": optimizer.__class__.__name__,
+            "learning_rate": optimizer.param_groups[0]['lr']
+        })
+        for epoch in range(num_epoch):
+            model.train()
+            running_loss = 0.0
+            pbar = tqdm(data_loader, desc=f"epoch [{epoch+1}/{num_epoch}]")
+            for step, (images, masks) in enumerate(pbar):
+                images, masks = images.cuda(), masks.cuda()
+                
+                outputs = model(images)['out']
+                
+                loss = criterion(outputs, masks)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                
+                running_loss += loss.item()
+                
+                pbar.set_postfix(loss=round(loss.item(), 4))
+                
+            if (epoch + 1) % val_step == 0:
+                dice = validation(epoch +1, model, val_loader, criterion, classes)
+                
+                if best_dice < dice:
+                    print(f"Best epoch : epoch {epoch + 1}, {best_dice:.4f} -> {dice:.4f}")
+                    best_dice = dice
+                    save_best(model, save_dir)
