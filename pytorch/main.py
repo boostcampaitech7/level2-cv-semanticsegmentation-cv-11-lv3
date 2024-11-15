@@ -15,8 +15,10 @@ from loss.loss import combine_loss
 from train.train import train, validation
 from utils.util import inference_save, inference_to_csv
 from train.test import test
-
+from utils.mlflow import MLflowManager
 # 1. 하이퍼파라미터 설정
+exp_name='hi'
+run_name='test'
 ROOT_PATH = "/data/ephemeral/home"
 FOLD_PATH = "/data/ephemeral/home/folds"
 BATCH_SIZE = 16
@@ -42,6 +44,7 @@ set_seed(RANDOM_SEED)
 
 fold_path = f'fold_{FOLDNUM}.csv'
 fold_df = pd.read_csv(os.path.join(FOLD_PATH,fold_path))
+
 
 # train_pngs = sorted(find_file(os.path.join(ROOT_PATH, "train/DCM"), ".png"))
 # train_jsons = sorted(find_file(os.path.join(ROOT_PATH, "train/outputs_json"), ".json"))
@@ -110,7 +113,7 @@ def main():
     print(f"FOLD NUMBER: FOLD_{FOLDNUM}")
     print("학습 시작...")
     best_dice = 0.0
-
+    mlflow_manager =MLflowManager(experiment_name=exp_name)
     train(
         model=model,
         num_epoch=NUM_EPOCHS,
@@ -120,7 +123,9 @@ def main():
         criterion=criterion,
         optimizer=optimizer,
         save_dir=SAVE_DIR,
-        classes=CLASSES
+        classes=CLASSES,
+        mlflow_manager=mlflow_manager,
+        run_name=run_name
     )
 
     print("학습 완료.")
