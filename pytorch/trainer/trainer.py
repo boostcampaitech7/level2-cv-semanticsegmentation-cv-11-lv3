@@ -20,7 +20,6 @@ def dice_coef(y_true, y_pred):
         eps = 0.0001
         return (2. * intersection + eps) / (torch.sum(y_true_f, -1) + torch.sum(y_pred_f, -1) + eps)
 
-
 class Trainer:
     def __init__(self, 
                  model: nn.Module,

@@ -18,14 +18,7 @@ from data.test_dataset import XRayInferenceDataset
 from trainer.trainer import Trainer
 from scheduler.scheduler_selector import SchedulerSelector
 from loss.loss_selector import LossSelector
-
-
-def initialize_model(num_classes):
-    model = models.segmentation.fcn_resnet50(pretrained=True)
-    model.classifier[4] = nn.Conv2d(512, num_classes, kernel_size=1)
-    return model
-
-
+from models.modelselector import ModelSelector
 
 def get_folds(cfg):
     folds = []
@@ -37,8 +30,6 @@ def get_folds(cfg):
     
     return folds
     
-
-
 def main(cfg):
     set_seed(cfg.seed)
     classes = get_classes()
@@ -46,12 +37,15 @@ def main(cfg):
     folds = get_folds(cfg)
     mlflow_manager = MLflowManager(experiment_name=cfg.exp_name)
 
+    model_selector = ModelSelector()
+    
     for fold_df in folds:
         cur_fold = fold_df.iloc[0]["fold"]
         print(f"--------Current Fold: {cur_fold}----------")
 
-        model = initialize_model(cfg.model_parameter.classes)
+        model = model_selector.get_model(cfg.model)
         model = model.cuda()
+        
         transform_list = [A.Resize(512, 512)]
         transforms = get_transform(transform_list)
 
@@ -91,7 +85,6 @@ def main(cfg):
         loss_selector = LossSelector()
         criterion = loss_selector.get_loss(cfg.loss_name, **cfg.loss_parameter)
 
-
         trainer = Trainer(
                     model=model,
                     max_epoch=cfg.max_epoch,
@@ -114,9 +107,6 @@ def main(cfg):
         del test_loader, test_dataset, model, optimizer, criterion, train_loader, valid_loader, train_dataset, val_dataset
         torch.cuda.empty_cache()
         gc.collect()
-
-
-
 
         test_pngs = find_file(os.path.join(cfg.test_root, "test/DCM"), ".png")
 
