@@ -26,12 +26,11 @@ class XRayTrainDataset(Dataset):
         ind2class (dict): 인덱스를 클래스 이름으로 매핑하는 딕셔너리
         data_cache (dict): 캐싱할 데이터를 저장하는 딕셔너리
     '''
-    def __init__(self, root_dir, fold_df, is_train=True, 
+    def __init__(self, image_root,label_root, fold_df, is_train=True, 
                  transforms=None, cache_data=False ,classes=None):
         
         data_type = 'train' if is_train else 'val'
         
-        self.root_dir = root_dir
         self.filenames = fold_df[fold_df["split"]==data_type]["image_name"].tolist()
         self.labelnames = fold_df[fold_df["split"]==data_type]["json_name"].tolist()
         self.is_train = is_train
@@ -41,8 +40,8 @@ class XRayTrainDataset(Dataset):
         
         self.class2ind = dict(zip(classes, range(len(classes))))
         
-        self.image_dir = root_dir + "/train/DCM" 
-        self.json_dir = root_dir + "/train/outputs_json"
+        self.image_dir = image_root
+        self.json_dir = label_root
 
 
         

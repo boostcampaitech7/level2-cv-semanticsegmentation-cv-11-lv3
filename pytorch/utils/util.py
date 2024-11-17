@@ -4,7 +4,7 @@ import random
 import os
 import json
 import cv2
-from train.test_rle import decode_rle_to_mask
+from trainer.test_rle import decode_rle_to_mask
 import pandas as pd
 from tqdm.auto import tqdm
 
@@ -71,7 +71,7 @@ def find_file(root_path, extension:str) -> set:
     }
     return result
 
-def save_best(model, save_dir, file_name='best.pt'):
+def save_best(model, save_dir, cur_fold, file_name='best.pt'):
     '''
     전체 모델을 저장합니다
     
@@ -84,6 +84,7 @@ def save_best(model, save_dir, file_name='best.pt'):
         None
     '''
     os.makedirs(save_dir, exist_ok=True)
+    file_name = f'{cur_fold}_'+file_name
     output_path = os.path.join(save_dir, file_name)
     torch.save(model, output_path)
     print(f"최종 모델이 {output_path}에 저장되었습니다.")
@@ -118,7 +119,7 @@ def read_annotations(json_path) -> dict:
     with open(json_path,'r') as f:
         return json.load(f)['annotations']
     
-def inference_save(rles, filename_and_class, image_root, classes, save_dir="inference_results", num_samples=10):
+def inference_save(filename_and_class, image_root, image_size, result_df, save_dir="inference_results", num_samples=10):
     """
     인퍼런스 결과 이미지를 저장
 
@@ -132,6 +133,7 @@ def inference_save(rles, filename_and_class, image_root, classes, save_dir="infe
     """
     # 저장 디렉토리 생성
     os.makedirs(save_dir, exist_ok=True)
+    classes = get_classes()
 
     # 샘플 개수 설정 (중복 없이 이미지 이름만 사용)
     image_names = list(set([x.split("_", 1)[1] for x in filename_and_class]))
@@ -141,7 +143,11 @@ def inference_save(rles, filename_and_class, image_root, classes, save_dir="infe
         try:
             # 이미지 이름 추출
             image_name = image_names[idx]
+
             image_path = os.path.join(image_root, image_name)
+
+            name_only = list(image_name.split('/'))[-1]
+            rles = result_df[result_df['image_name'] == name_only]['rle'].tolist()
 
             # 이미지 읽기
             image = cv2.imread(image_path)
@@ -154,20 +160,17 @@ def inference_save(rles, filename_and_class, image_root, classes, save_dir="infe
 
             # 예측 마스크 생성
             preds = []
-            for class_idx, class_name in enumerate(classes):
-                rle_index = idx * len(classes) + class_idx
-                rle = rles[rle_index]
-                if rle is not None and rle != "":
-                    pred = decode_rle_to_mask(rle, 2048, 2048)
-                    # 예측 마스크를 원본 이미지 크기로 리사이즈
-                    pred = cv2.resize(pred, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST)
-                else:
-                    pred = np.zeros((orig_h, orig_w), dtype=np.uint8)
+
+            for rle in rles[:len(get_classes())]:
+                pred = decode_rle_to_mask(rle, orig_h, orig_w)
                 preds.append(pred)
 
-            # 예측 결과를 RGB 이미지로 변환
+
             preds = np.stack(preds, axis=0)
             pred_rgb = label2rgb(preds)
+
+            print(pred_rgb.shape)
+            print(image.shape)
 
             # 원본 이미지와 예측 결과 시각화
             viz = np.hstack((image, pred_rgb))
@@ -191,7 +194,7 @@ def inference_save(rles, filename_and_class, image_root, classes, save_dir="infe
 
     print("인퍼런스 결과 저장이 완료되었습니다.")
     
-def inference_to_csv(filename_and_class, rles, output_name="output.csv"):
+def inference_to_csv(filename_and_class, rles, path = './results', output_name="output.csv"):
     """
     인퍼런스 결과를 CSV 파일로 저장
 
@@ -208,4 +211,28 @@ def inference_to_csv(filename_and_class, rles, output_name="output.csv"):
         "class": classes,
         'rle': rles,
     })
-    df.to_csv(output_name, index=False)
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    df.to_csv(os.path.join(path, output_name), index=False)
+
+    return df
+
+
+def get_classes():
+    classes = [
+            'finger-1', 'finger-2', 'finger-3', 'finger-4', 'finger-5',
+            'finger-6', 'finger-7', 'finger-8', 'finger-9', 'finger-10',
+            'finger-11', 'finger-12', 'finger-13', 'finger-14', 'finger-15',
+            'finger-16', 'finger-17', 'finger-18', 'finger-19', 'Trapezium',
+            'Trapezoid', 'Capitate', 'Hamate', 'Scaphoid', 'Lunate',
+            'Triquetrum', 'Pisiform', 'Radius', 'Ulna',
+        ]
+    return classes
+
+def get_CLASS2IND():
+    return {cls: i for i, cls in enumerate(get_classes())}
+
+def get_IND2CLASS():
+    return {i: cls for i, cls in enumerate(get_classes())}

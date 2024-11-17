@@ -1,9 +1,11 @@
 import torch
 from tqdm.auto import tqdm
 import torch.nn.functional as F
-from train.test_rle import encode_mask_to_rle
+from trainer.test_rle import encode_mask_to_rle
+from utils.util import get_IND2CLASS
 
-def test(model, data_loader, ind2class, thr=0.5):
+def test(args, data_loader, thr=0.5):
+    model = torch.load(args.model)
     model = model.cuda()
     model.eval()
     rles = []
@@ -21,5 +23,5 @@ def test(model, data_loader, ind2class, thr=0.5):
                 for c, segm in enumerate(output):
                     rle = encode_mask_to_rle(segm)
                     rles.append(rle)
-                    filename_and_class.append(f"{ind2class[c]}_{image_name}")
+                    filename_and_class.append(f"{get_IND2CLASS()[c]}_{image_name}")
     return rles, filename_and_class

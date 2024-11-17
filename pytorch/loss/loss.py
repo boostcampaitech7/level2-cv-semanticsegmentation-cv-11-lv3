@@ -34,3 +34,14 @@ def combine_loss(pred, target, bce_weight=0.5):
     dice = dice_loss(pred, target)
     loss = bce * bce_weight + dice * (1 - bce_weight)
     return loss
+
+class CustomBCEWithLogitsLoss(nn.Module):
+    """
+    Base Code에서 사용된 BCEWithLogitsLoss
+    """
+    def __init__(self, **kwargs):
+        super(CustomBCEWithLogitsLoss, self).__init__()
+        self.loss = nn.BCEWithLogitsLoss(**kwargs)
+
+    def forward(self, predictions, targets):
+        return self.loss(predictions, targets)
