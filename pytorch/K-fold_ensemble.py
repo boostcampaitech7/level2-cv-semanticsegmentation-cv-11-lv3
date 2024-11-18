@@ -16,22 +16,6 @@ from data.test_dataset import XRayInferenceDataset
 from utils.util import inference_save, inference_to_csv, find_file
 from datetime import datetime
 
-def softvoting(outputs, image_names, thr):
-    soft_voting_output = np.mean(outputs, axis=0)
-
-    final_prediction = (soft_voting_output > thr)
-    rles = []
-    filename_and_class = []
-
-    for output, image_name in zip(final_prediction, image_names):
-                for c, segm in enumerate(output):
-                    rle = encode_mask_to_rle(segm)
-                    rles.append(rle)
-                    filename_and_class.append(f"{get_IND2CLASS()[c]}_{image_name}")
-
-    return rles, filename_and_class
-
-
 if __name__=="__main__":
     start_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
