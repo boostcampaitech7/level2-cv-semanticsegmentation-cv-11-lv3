@@ -122,8 +122,7 @@ class Trainer:
                 for images, masks in self.val_loader:
                     images, masks = images.cuda(), masks.cuda()
 
-                    with autocast():  # Mixed precision context
-                        outputs = self.model(images)
+                    outputs = self.model(images)
 
                     output_h, output_w = outputs.size(-2), outputs.size(-1)
                     mask_h, mask_w = masks.size(-2), masks.size(-1)
