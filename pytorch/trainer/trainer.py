@@ -63,7 +63,7 @@ class Trainer:
         
 
     def save_model(self, epoch, dice_score, before_path):
-        # checkpoint 저장 폴더 생성
+        
         if not osp.isdir(self.save_dir):
             os.makedirs(self.save_dir, exist_ok=True)
 
