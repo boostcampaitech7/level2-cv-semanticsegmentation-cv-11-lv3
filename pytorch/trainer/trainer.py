@@ -186,15 +186,18 @@ class Trainer:
             for epoch in range(1, self.max_epoch + 1):
                 
                 train_loss = self.train_epoch(epoch)
-
+                self.mlflow_manager.log_metrics("train_loss",train_loss,step=epoch)
                 # validation 주기에 따라 loss를 출력하고 best model을 저장합니다.
                 if epoch % self.val_interval == 0:
                     avg_dice, dices_per_class, val_loss = self.validation(epoch)
-                    
+                    self.mlflow_manager.log_metric("val_loss",val_loss, step=epoch)
+                    self.mlflow_manager.log_metric("val_dice",avg_dice, step=epoch)
                     if best_dice < avg_dice:
                         best_dice = avg_dice
                         best_val_class = dices_per_class
                         best_val_loss = val_loss
+                        self.mlflow_manager.log_metric("best_dice",best_dice, step=epoch)
+                        
                         print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                         save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
                         
