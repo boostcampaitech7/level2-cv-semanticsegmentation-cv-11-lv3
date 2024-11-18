@@ -2,6 +2,8 @@ from .DUCKNet.duck_net import DUCKNet
 from .UNet.unet import UNet
 
 class ModelSelector():
+    # def __init__(self, model_name, in_channels, num_classes, starting_filters=None):
+
     def __init__(self):
         self.model_list = {
             "UNet": UNet,

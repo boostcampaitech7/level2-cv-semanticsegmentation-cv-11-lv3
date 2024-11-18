@@ -25,6 +25,7 @@ train_batch_size: 2
 val_batch_size: 4
 test_batch_size: 4
 
+
 # image resize
 image_size: &image_size 128
 
@@ -67,3 +68,7 @@ save_dir: ./checkpoints/${model.model_name}
 # mlflow
 exp_name: refactor_test
 run_name: test_run
+
+# 구글시트
+google_cloud_key_path: /data/ephemeral/home/keys/google_key.json
+

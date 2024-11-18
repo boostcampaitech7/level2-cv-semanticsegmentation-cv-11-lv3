@@ -151,6 +151,7 @@ def main(cfg):
         sheet.update_server_status(cfg.server, cfg.access_name, False, cfg.task)
         print("end")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, default="./configs/base_train.yaml")

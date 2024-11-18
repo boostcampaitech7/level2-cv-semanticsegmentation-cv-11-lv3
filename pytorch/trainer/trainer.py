@@ -114,6 +114,7 @@ class Trainer:
             with tqdm(total=len(self.val_loader), desc=f'{self.cur_fold}[Validation Epoch {epoch}]', disable=False) as pbar:
                 for images, masks in self.val_loader:
                     images, masks = images.cuda(), masks.cuda()
+
                     outputs = self.model(images)
 
                     output_h, output_w = outputs.size(-2), outputs.size(-1)
