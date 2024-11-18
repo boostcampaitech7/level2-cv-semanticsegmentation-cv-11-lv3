@@ -10,6 +10,9 @@ from tqdm.auto import tqdm
 from datetime import timedelta
 from torch.utils.data import DataLoader
 from utils.util import save_best
+import services.kakao as kakao
+import services.slack as slack
+import traceback
 
 
 def dice_coef(y_true, y_pred):
@@ -34,7 +37,10 @@ class Trainer:
                  cur_fold: str,
                  mlflow_manager,
                  run_name,
-                 num_class,):
+                 num_class,
+                 kakao_uuid_list,
+                 access_name,
+                 server):
         
         self.model = model
         self.train_loader = train_loader
@@ -49,6 +55,10 @@ class Trainer:
         self.mlflow_manager = mlflow_manager
         self.run_name = run_name
         self.num_class = num_class
+        self.kakao_uuid_list = kakao_uuid_list
+        self.access_name = access_name
+        self.server = server
+        
 
     def save_model(self, epoch, dice_score, before_path):
         # checkpoint 저장 폴더 생성
@@ -68,11 +78,11 @@ class Trainer:
         self.model.train()
         total_loss = 0.0
 
-        with tqdm(total=len(self.train_loader), desc=f"{self.cur_fold}[Training Epoch {epoch}]", disable=False) as pbar:
+        with tqdm(total=len(self.train_loader), desc=f"{self.cur_fold}[Training Epoch {epoch}\{self.max_epoch}]", disable=False) as pbar:
             for images, masks in self.train_loader:
                 images, masks = images.cuda(), masks.cuda()
 
-                outputs = self.model(images)['out']
+                outputs = self.model(images)
 
                 loss = self.criterion(outputs, masks)
                 self.optimizer.zero_grad()
@@ -104,7 +114,7 @@ class Trainer:
             with tqdm(total=len(self.val_loader), desc=f'{self.cur_fold}[Validation Epoch {epoch}]', disable=False) as pbar:
                 for images, masks in self.val_loader:
                     images, masks = images.cuda(), masks.cuda()
-                    outputs = self.model(images)['out']
+                    outputs = self.model(images)
 
                     output_h, output_w = outputs.size(-2), outputs.size(-1)
                     mask_h, mask_w = masks.size(-2), masks.size(-1)
@@ -116,8 +126,9 @@ class Trainer:
                     loss = self.criterion(outputs, masks)
                     total_loss += loss.item()
 
-                    outputs = torch.sigmoid(outputs).detach().cpu()
-                    masks = masks.detach().cpu()
+                    outputs = torch.sigmoid(outputs)
+                    # outputs = torch.sigmoid(outputs).detach().cpu()
+                    # masks = masks.detach().cpu()
 
                     dice = dice_coef(outputs, masks)
                     dices.append(dice)
@@ -143,42 +154,52 @@ class Trainer:
             timedelta(seconds=val_end),
         ))
 
-        class_dice_dict = {f"{c}'s dice score" : d for c, d in zip(self.val_loader.dataset.class2ind, dices_per_class)}
+        class_dice_dict = {f"{c}" : d for c, d in zip(self.val_loader.dataset.class2ind, dices_per_class)}
         
         return avg_dice, class_dice_dict, total_loss / len(self.val_loader)
     
-
-
     def train(self):
         print(f'Start training..')
-
         best_dice = 0.
         best_val_class = dict()
         best_val_loss = 0.
-        with self.mlflow_manager.start_run(run_name=self.run_name):
-                self.mlflow_manager.log_params({
-                    "num_epoch": self.max_epoch,
-                    "val_step": self.val_interval,
-                    "n_classes": self.num_class,
-                    "save_dir": self.save_dir,
-                    "optimizer": self.optimizer.__class__.__name__,
-                    "learning_rate": self.optimizer.param_groups[0]['lr']
-                })
-        
-        for epoch in range(1, self.max_epoch + 1):
-
-            train_loss = self.train_epoch(epoch)
-
-            # validation 주기에 따라 loss를 출력하고 best model을 저장합니다.
-            if epoch % self.val_interval == 0:
-                avg_dice, dices_per_class, val_loss = self.validation(epoch)
+        try:
+            with self.mlflow_manager.start_run(run_name=self.run_name):
+                    self.mlflow_manager.log_params({
+                        "num_epoch": self.max_epoch,
+                        "val_step": self.val_interval,
+                        "n_classes": self.num_class,
+                        "save_dir": self.save_dir,
+                        "optimizer": self.optimizer.__class__.__name__,
+                        "learning_rate": self.optimizer.param_groups[0]['lr']
+                    })
+            
+            for epoch in range(1, self.max_epoch + 1):
                 
-                if best_dice < avg_dice:
-                    best_dice = avg_dice
-                    best_val_class = dices_per_class
-                    best_val_loss = val_loss
-                    print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
-                    save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
+                train_loss = self.train_epoch(epoch)
 
-            self.scheduler.step()
+                # validation 주기에 따라 loss를 출력하고 best model을 저장합니다.
+                if epoch % self.val_interval == 0:
+                    avg_dice, dices_per_class, val_loss = self.validation(epoch)
+                    
+                    if best_dice < avg_dice:
+                        best_dice = avg_dice
+                        best_val_class = dices_per_class
+                        best_val_loss = val_loss
+                        print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
+                        save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
+                        
+                if self.max_epoch >= 3 and epoch % (self.max_epoch // 3) == 0:
+                    dices_per_class_str = "\n".join([f"{key}: {value:.4f}" for key, value in best_val_class.items()])
+                    message = f'서버 {self.server}번 {self.access_name}님의\n학습 현황 epoch {epoch}\nbest dice score : {best_dice}\n{dices_per_class_str}'
+                    kakao.send_message(self.kakao_uuid_list, message)
+                    
+                self.scheduler.step()
+        except Exception as e:
+            error_message = (
+            f"서버 {self.server}번 {self.access_name}님의 학습 중 에러 발생\nError: {str(e)}"
+            )
+            print(traceback.format_exc())
+            kakao.send_message(self.kakao_uuid_list, error_message)
+            slack.send_slack_notification(f"서버 {self.server}번 {self.access_name}님의 학습 중 에러 발생\nError: {str(e)}")
         return best_dice, best_val_class

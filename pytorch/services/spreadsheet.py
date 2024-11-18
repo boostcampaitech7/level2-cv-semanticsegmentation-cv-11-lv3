@@ -8,7 +8,7 @@ SERVER_STATUS_RANGES : 서버 상태를 업데이트할 셀 범위 (서버 번�
 CLOUD_KEY : Google Cloud 서비스 계정 키가 저장된 JSON 파일 경로
 '''
 
-SPREADSHEET_ID = "YOUR SHEET ID"
+SPREADSHEET_ID = "1Y5Mj6BPnvzYk8iLefVkcI6_f1Ufod-bCAYLmQXRQ4O4"
 
 SERVER_STATUS_RANGES = {
     1: ("서버현황!B2", "서버현황!C2", "서버현황!D2"),
@@ -17,7 +17,7 @@ SERVER_STATUS_RANGES = {
     4: ("서버현황!B5", "서버현황!C5", "서버현황!D5"),
 }
 
-CLOUD_KEY = "GOOGLE CLOUD KEY PATH"
+CLOUD_KEY = "/data/ephemeral/home/keys/google_key.json"
 
 def get_sheets_service():
     '''
@@ -100,7 +100,7 @@ def append_training_log(sheet_name, data):
     
     result = sheet.values().append(
         spreadsheetId=SPREADSHEET_ID,
-        range=f"{sheet_name}!A:D",
+        range=f"{sheet_name}!A:J",
         valueInputOption="RAW",
         insertDataOption="INSERT_ROWS",
         body=body

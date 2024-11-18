@@ -13,6 +13,7 @@ from tqdm.auto import tqdm
 from torch.utils.data import DataLoader
 from data.test_dataset import XRayInferenceDataset
 from utils.util import inference_save, inference_to_csv, find_file
+from datetime import datetime
 
 # # mask map으로 나오는 인퍼런스 결과를 RLE로 인코딩 합니다.
 # def encode_mask_to_rle(mask):
@@ -72,6 +73,7 @@ from utils.util import inference_save, inference_to_csv, find_file
 
 
 if __name__=="__main__":
+    start_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     parser = argparse.ArgumentParser()
     parser.add_argument("model", type=str, help="Path to the model to use")
     parser.add_argument("--image_root", type=str, default="/data/ephemeral/home")
@@ -97,10 +99,11 @@ if __name__=="__main__":
     )
 
     rles, filename_and_class = test(args, test_loader)
-
-    result_df = inference_to_csv(filename_and_class, rles)
+    save_dir = f"./inference_results/{start_time}"
+    
+    result_df = inference_to_csv(filename_and_class, rles, path=save_dir)
     
     image_root = os.path.join(args.image_root,'test/DCM')
 
-    inference_save(filename_and_class, image_root, image_size=args.resize, result_df=result_df) # 현재 오류 있음
+    inference_save(filename_and_class, image_root, image_size=args.resize, result_df=result_df, save_dir=save_dir)
     
