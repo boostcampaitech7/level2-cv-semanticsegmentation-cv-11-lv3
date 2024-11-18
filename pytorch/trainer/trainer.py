@@ -10,6 +10,7 @@ from tqdm.auto import tqdm
 from datetime import timedelta
 from torch.utils.data import DataLoader
 from utils.util import save_best
+from torch.cuda.amp import autocast, GradScaler
 import services.kakao as kakao
 import services.slack as slack
 import traceback
@@ -58,6 +59,7 @@ class Trainer:
         self.kakao_uuid_list = kakao_uuid_list
         self.access_name = access_name
         self.server = server
+        self.scaler = GradScaler()
         
 
     def save_model(self, epoch, dice_score, before_path):
@@ -86,8 +88,13 @@ class Trainer:
 
                 loss = self.criterion(outputs, masks)
                 self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+                with autocast():
+                    outputs = self.model(images)
+                    loss = self.criterion(outputs, masks)
+
+                self.scaler.scale(loss).backward()
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
 
                 total_loss += loss.item()
                 pbar.update(1)
@@ -115,7 +122,8 @@ class Trainer:
                 for images, masks in self.val_loader:
                     images, masks = images.cuda(), masks.cuda()
 
-                    outputs = self.model(images)
+                    with autocast():  # Mixed precision context
+                        outputs = self.model(images)
 
                     output_h, output_w = outputs.size(-2), outputs.size(-1)
                     mask_h, mask_w = masks.size(-2), masks.size(-1)
