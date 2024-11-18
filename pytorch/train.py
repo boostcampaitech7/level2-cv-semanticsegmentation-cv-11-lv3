@@ -83,7 +83,7 @@ def main(cfg):
 
         # criterion = combine_loss
         loss_selector = LossSelector()
-        criterion = loss_selector.get_loss(cfg.loss_name, **cfg.loss_parameter)
+        criterion = loss_selector.get_loss(cfg.loss, **cfg.loss_parameter)
 
         trainer = Trainer(
                     model=model,
@@ -98,27 +98,15 @@ def main(cfg):
                     cur_fold = cur_fold,
                     mlflow_manager = mlflow_manager,
                     run_name = cfg.run_name,
-                    num_class = cfg.model_parameter.classes,
+                    num_class = cfg.model.model_parameter.classes,
                     )
 
 
         best_dice, best_val_class = trainer.train()
 
-        del test_loader, test_dataset, model, optimizer, criterion, train_loader, valid_loader, train_dataset, val_dataset
+        del model, optimizer, criterion, train_loader, valid_loader, train_dataset, val_dataset
         torch.cuda.empty_cache()
         gc.collect()
-
-        test_pngs = find_file(os.path.join(cfg.test_root, "test/DCM"), ".png")
-
-        test_dataset = XRayInferenceDataset(
-            pngs=test_pngs,
-            root_dir= cfg.test_root,
-            transforms=transforms
-        )
-
-        test_loader = DataLoader(
-            dataset=test_dataset, batch_size=cfg.test_batch_size, shuffle=False, num_workers=0, drop_last=False
-        )
 
 
 if __name__ == "__main__":
