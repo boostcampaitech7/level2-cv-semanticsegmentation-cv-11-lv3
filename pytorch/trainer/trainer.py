@@ -72,7 +72,8 @@ class Trainer:
             for images, masks in self.train_loader:
                 images, masks = images.cuda(), masks.cuda()
 
-                outputs = self.model(images)['out']
+                # outputs = self.model(images)['out']
+                outputs = self.model(images)
 
                 loss = self.criterion(outputs, masks)
                 self.optimizer.zero_grad()
@@ -104,7 +105,8 @@ class Trainer:
             with tqdm(total=len(self.val_loader), desc=f'{self.cur_fold}[Validation Epoch {epoch}]', disable=False) as pbar:
                 for images, masks in self.val_loader:
                     images, masks = images.cuda(), masks.cuda()
-                    outputs = self.model(images)['out']
+                    # outputs = self.model(images)['out']
+                    outputs = self.model(images)
 
                     output_h, output_w = outputs.size(-2), outputs.size(-1)
                     mask_h, mask_w = masks.size(-2), masks.size(-1)

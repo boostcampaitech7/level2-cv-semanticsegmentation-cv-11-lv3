@@ -6,17 +6,17 @@ fold_list: [2,]
 
 # 모델명 및 사전 학습 여부
 model:
-  model_name: "DUCKNet"
+  model_name: DUCKNet
   model_parameter:
     in_channels: 3
     classes: 29
     pretrained: True
-    start_filters: 34
+    start_filters: 16
 
 # batch_size
-train_batch_size: 16
-val_batch_size: 4
-test_batch_size: 4
+train_batch_size: 4
+val_batch_size: 2
+test_batch_size: 2
 
 # image resize
 image_size: &image_size 1024
@@ -55,11 +55,11 @@ seed: 21
 val_interval: 1
 
 # checkpoint 저장 경로
-save_dir: "./checkpoints/${model_name}"
+save_dir: ./checkpoints/${model.model_name}
 
 # mlflow
 exp_name: refactor_test
 run_name: test_run
 
 # 구글시트
-google_cloud_key_path: "/data/ephemeral/home/keys/google_key.json"
+google_cloud_key_path: /data/ephemeral/home/keys/google_key.json

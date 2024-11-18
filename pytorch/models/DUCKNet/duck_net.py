@@ -5,17 +5,17 @@ from models.DUCKNet.layers import conv_block_2D
 import torch.nn.init as init
 
 class DUCKNet(nn.Module):
-    def __init__(self, input_channels, num_classes, starting_filters):
+    def __init__(self, in_channels, num_classes, starting_filters):
         super(DUCKNet, self).__init__()
         self.input_layer = nn.Identity()
 
-        self.p1 = nn.Conv2d(input_channels, starting_filters * 2, kernel_size=2, stride=2, padding=0)
+        self.p1 = nn.Conv2d(in_channels, starting_filters * 2, kernel_size=2, stride=2, padding=0)
         self.p2 = nn.Conv2d(starting_filters * 2, starting_filters * 4, kernel_size=2, stride=2, padding=0)
         self.p3 = nn.Conv2d(starting_filters * 4, starting_filters * 8, kernel_size=2, stride=2, padding=0)
         self.p4 = nn.Conv2d(starting_filters * 8, starting_filters * 16, kernel_size=2, stride=2, padding=0)
         self.p5 = nn.Conv2d(starting_filters * 16, starting_filters * 32, kernel_size=2, stride=2, padding=0)
 
-        self.t0 = conv_block_2D('duckv2', input_channels, starting_filters)
+        self.t0 = conv_block_2D('duckv2', in_channels, starting_filters)
 
         self.l1i = nn.Conv2d(starting_filters, starting_filters * 2, kernel_size=2, stride=2, padding=0)
         self.t1 = conv_block_2D('duckv2', starting_filters * 2, starting_filters * 2)
