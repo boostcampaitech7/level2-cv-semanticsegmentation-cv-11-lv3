@@ -153,6 +153,8 @@ class Trainer:
         print(f'Start training..')
 
         best_dice = 0.
+        best_val_class = dict()
+        best_val_loss = 0.
         with self.mlflow_manager.start_run(run_name=self.run_name):
                 self.mlflow_manager.log_params({
                     "num_epoch": self.max_epoch,
@@ -172,8 +174,11 @@ class Trainer:
                 avg_dice, dices_per_class, val_loss = self.validation(epoch)
                 
                 if best_dice < avg_dice:
-                    print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                     best_dice = avg_dice
+                    best_val_class = dices_per_class
+                    best_val_loss = val_loss
+                    print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                     save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
 
             self.scheduler.step()
+        return best_dice, best_val_class

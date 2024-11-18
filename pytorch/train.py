@@ -102,7 +102,7 @@ def main(cfg):
                     )
 
 
-        trainer.train()
+        best_dice, best_val_class = trainer.train()
 
         del test_loader, test_dataset, model, optimizer, criterion, train_loader, valid_loader, train_dataset, val_dataset
         torch.cuda.empty_cache()
