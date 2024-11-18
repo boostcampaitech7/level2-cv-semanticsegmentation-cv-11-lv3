@@ -2,7 +2,14 @@
 image_root: /data/ephemeral/home/train/DCM
 fold_root: /data/ephemeral/home/folds
 label_root: /data/ephemeral/home/train/outputs_json
-fold_list: [2,]
+test_root: /data/ephemeral/home/test
+fold_list: [0,]
+
+# 앱 설정 정의
+kakao_uuid_path: /data/ephemeral/home/keys/uuid.json
+task: service 연결
+access_name: 이상진
+server: 4
 
 # 모델명 및 사전 학습 여부
 model:
@@ -14,12 +21,13 @@ model:
     start_filters: 16
 
 # batch_size
-train_batch_size: 4
-val_batch_size: 2
-test_batch_size: 2
+train_batch_size: 2
+val_batch_size: 4
+test_batch_size: 4
+
 
 # image resize
-image_size: &image_size 1024
+image_size: &image_size 128
 
 # transform 관련
 transform:
@@ -31,7 +39,7 @@ transform:
 lr: 5e-4
 weight_decay: 1e-6
 
-max_epoch: &max_epoch 1
+max_epoch: &max_epoch 10
 
 # loss 관련 설정
 loss: 
@@ -63,3 +71,4 @@ run_name: test_run
 
 # 구글시트
 google_cloud_key_path: /data/ephemeral/home/keys/google_key.json
+

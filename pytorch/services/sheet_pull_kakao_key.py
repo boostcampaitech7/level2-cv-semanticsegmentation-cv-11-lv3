@@ -9,11 +9,11 @@ KAKAO_ACCESS_KEY : 카카오톡 액세스 키가 저장된 JSON 파일 경로
 CLOUD_KEY : Google Cloud 서비스 계정 키가 저장된 JSON 파일 경로
 '''
 
-SPREADSHEET_ID = "YOUR_SHEET_ID"
-RANGE_NAME = "SHEET_NAME"
+SPREADSHEET_ID = "1Y5Mj6BPnvzYk8iLefVkcI6_f1Ufod-bCAYLmQXRQ4O4"
+RANGE_NAME = "이상진!A2"
 
-CLOUD_KEY = "COOGLE CLOUD KEY PATH"
-KAKAO_ACCESS_KEY = "KAKAO ACCESS KEY PATH"
+CLOUD_KEY = "/data/ephemeral/home/keys/google_key.json"
+KAKAO_ACCESS_KEY = "/data/ephemeral/home/keys/kakao_code.json"
 
 def get_access_token():
     '''

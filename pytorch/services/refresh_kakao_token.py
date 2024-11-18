@@ -6,8 +6,8 @@ API_KEY : 카카오톡 리프레쉬, REST API 키가 저장된 json 형식의 �
 KAKAO_ACCESS_KEY : 카카오톡 액세스 키가 저장된 json 형식 파일의 경로
 '''
 
-API_KEY = "KAKAO_REFRESH_KEY_PATH"
-KAKAO_ACCESS_KEY = "KAKAO_ACCESS_KEY_PATH"
+API_KEY = "/data/ephemeral/home/keys/kakao_rr_key.json"
+KAKAO_ACCESS_KEY = "/data/ephemeral/home/keys/kakao_code.json"
 
 def api_key():
     '''

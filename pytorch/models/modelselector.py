@@ -3,6 +3,7 @@ from .UNet.unet import UNet
 
 class ModelSelector():
     # def __init__(self, model_name, in_channels, num_classes, starting_filters=None):
+
     def __init__(self):
         self.model_list = {
             "UNet": UNet,
@@ -10,8 +11,8 @@ class ModelSelector():
         }
         
     def get_model(self, model_cfg):
-        model_name = model_cfg.get('model_name')
-        model_params = model_cfg.get('model_parameter', {})
+        model_name = model_cfg.get("model_name")
+        model_params = model_cfg.get("model_parameter")
         
         if model_name not in self.model_list:
             raise ValueError(f"사용가능한 모델: {list(self.model_list.keys())}")

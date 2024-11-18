@@ -5,7 +5,7 @@ import json
 KAKAO_ACCESS_KEY : 카카오톡 액세스 키가 저장된 json 형식 파일의 경로
 '''
 
-KAKAO_ACCESS_KEY = "KAKAO_ACCESS_KEY_PATH"
+KAKAO_ACCESS_KEY = "/data/ephemeral/home/keys/kakao_code.json"
 
 def get_access_token(token):
     '''

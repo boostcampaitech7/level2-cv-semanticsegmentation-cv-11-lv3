@@ -17,6 +17,11 @@ PALETTE = [
     (0, 125, 92), (209, 0, 151), (188, 208, 182), (0, 220, 176),
 ]
 
+def extract_uuid2list(uuid_path):
+    with open(uuid_path, 'r') as f:
+        uuid = json.load(f)
+    return list(uuid.keys())
+
 def set_seed(seed):
     '''
     랜덤 시드를 설정하여 코드 실행의 재현성을 보장
@@ -119,7 +124,7 @@ def read_annotations(json_path) -> dict:
     with open(json_path,'r') as f:
         return json.load(f)['annotations']
     
-def inference_save(filename_and_class, image_root, image_size, result_df, save_dir="inference_results", num_samples=10):
+def inference_save(filename_and_class, image_root, result_df, save_dir="inference_results", num_samples=10):
     """
     인퍼런스 결과 이미지를 저장
 
@@ -179,7 +184,7 @@ def inference_save(filename_and_class, image_root, image_size, result_df, save_d
             if viz.dtype != np.uint8:
                 print(f"viz 배열의 타입이 잘못되었습니다. 현재 타입: {viz.dtype}, uint8로 변환합니다.")
                 viz = viz.astype(np.uint8)
-            print(f"저장할 이미지 크기: {viz.shape}, 데이터 타입: {viz.dtype}")
+            # print(f"저장할 이미지 크기: {viz.shape}, 데이터 타입: {viz.dtype}")
 
             # 결과 이미지 저장
             image_base_name = os.path.splitext(os.path.basename(image_name))[0]
@@ -187,8 +192,8 @@ def inference_save(filename_and_class, image_root, image_size, result_df, save_d
             saved = cv2.imwrite(save_path, viz)
             if not saved:
                 print(f"이미지 저장 실패: {save_path}")
-            else:
-                print(f"이미지 저장 성공: {save_path}")
+            # else:
+            #     print(f"이미지 저장 성공: {save_path}")
         except Exception as e:
             print(f"오류 발생: {e}")
 
