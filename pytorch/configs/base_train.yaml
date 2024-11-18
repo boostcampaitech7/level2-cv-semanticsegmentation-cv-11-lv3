@@ -2,7 +2,7 @@
 image_root: /data/ephemeral/home/train/DCM
 fold_root: /data/ephemeral/home/folds
 label_root: /data/ephemeral/home/train/outputs_json
-fold_list: [2,]
+fold_list: [0,1,2,3,4]
 
 # 모델명 및 사전 학습 여부
 model:
