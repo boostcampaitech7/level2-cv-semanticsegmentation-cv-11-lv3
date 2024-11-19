@@ -6,13 +6,13 @@ class UNet(nn.Module):
         super(UNet,self).__init__()
         def CBR(in_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=True):
             return nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias),
+                nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias),
                 nn.BatchNorm2d(out_channels),
                 nn.ReLU()
             )
             
         def unpool(in_channels, out_channels, kernel_size=2, stride=2, padding=0, bias=True):
-            return nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride, padding, bias)
+            return nn.ConvTranspose2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=bias)
         
         self.enc1_1 = CBR(in_channels, 64)
         self.enc1_2 = CBR(64, 64)
@@ -50,7 +50,7 @@ class UNet(nn.Module):
         self.dec1_2 = CBR(64*2, 64)
         self.dec1_1 = CBR(64, 64)
         
-        self.fc = nn.Conv2d(64, num_classes, 1, 1, 0, bias=True)
+        self.fc = nn.Conv2d(in_channels=64, out_channels=num_classes, kernel_size=1, stride=1, padding=0, bias=True)
         
     def forward(self, x):
         enc1_1 = self.enc1_1(x)

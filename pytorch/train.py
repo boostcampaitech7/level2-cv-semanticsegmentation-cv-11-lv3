@@ -115,7 +115,7 @@ def main(cfg):
                         )
 
             best_dice, best_val_class = trainer.train()
-            if best_dice == None or best_val_class == None:
+            if best_dice == 0:
                 continue
             else:
                 dices_per_class_str = "\n".join([f"{key}: {value:.4f}" for key, value in best_val_class.items()])
