@@ -63,7 +63,7 @@ class Trainer:
         
 
     def save_model(self, epoch, dice_score, before_path):
-        # checkpoint 저장 폴더 생성
+        
         if not osp.isdir(self.save_dir):
             os.makedirs(self.save_dir, exist_ok=True)
 
@@ -182,27 +182,30 @@ class Trainer:
                         "learning_rate": self.optimizer.param_groups[0]['lr']
                     })
             
-            for epoch in range(1, self.max_epoch + 1):
-                
-                train_loss = self.train_epoch(epoch)
-
-                # validation 주기에 따라 loss를 출력하고 best model을 저장합니다.
-                if epoch % self.val_interval == 0:
-                    avg_dice, dices_per_class, val_loss = self.validation(epoch)
-                    
-                    if best_dice < avg_dice:
-                        best_dice = avg_dice
-                        best_val_class = dices_per_class
-                        best_val_loss = val_loss
-                        print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
-                        save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
+                    for epoch in range(1, self.max_epoch + 1):
                         
-                if self.max_epoch >= 3 and epoch % (self.max_epoch // 3) == 0:
-                    dices_per_class_str = "\n".join([f"{key}: {value:.4f}" for key, value in best_val_class.items()])
-                    message = f'서버 {self.server}번 {self.access_name}님의\n학습 현황 epoch {epoch}\nbest dice score : {best_dice}\n{dices_per_class_str}'
-                    kakao.send_message(self.kakao_uuid_list, message)
-                    
-                self.scheduler.step()
+                        train_loss = self.train_epoch(epoch)
+                        self.mlflow_manager.log_metrics({"train_loss":train_loss},step=epoch)
+                        # validation 주기에 따라 loss를 출력하고 best model을 저장합니다.
+                        if epoch % self.val_interval == 0:
+                            avg_dice, dices_per_class, val_loss = self.validation(epoch)
+                            self.mlflow_manager.log_metrics({"val_loss":val_loss}, step=epoch)
+                            self.mlflow_manager.log_metrics({"val_dice":avg_dice}, step=epoch)
+                            if best_dice < avg_dice:
+                                best_dice = avg_dice
+                                best_val_class = dices_per_class
+                                best_val_loss = val_loss
+                                self.mlflow_manager.log_metric({"best_dice":best_dice}, step=epoch)
+                                
+                                print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
+                                save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
+                                
+                        if self.max_epoch >= 3 and epoch % (self.max_epoch // 3) == 0:
+                            dices_per_class_str = "\n".join([f"{key}: {value:.4f}" for key, value in best_val_class.items()])
+                            message = f'서버 {self.server}번 {self.access_name}님의\n학습 현황 epoch {epoch}\nbest dice score : {best_dice}\n{dices_per_class_str}'
+                            kakao.send_message(self.kakao_uuid_list, message)
+                            
+                        self.scheduler.step()
         except Exception as e:
             error_message = (
             f"서버 {self.server}번 {self.access_name}님의 학습 중 에러 발생\nError: {str(e)}"
