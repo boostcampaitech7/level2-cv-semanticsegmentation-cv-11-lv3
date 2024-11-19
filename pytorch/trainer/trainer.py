@@ -122,8 +122,7 @@ class Trainer:
                 for images, masks in self.val_loader:
                     images, masks = images.cuda(), masks.cuda()
 
-                    with autocast():  # Mixed precision context
-                        outputs = self.model(images)
+                    outputs = self.model(images)
 
                     output_h, output_w = outputs.size(-2), outputs.size(-1)
                     mask_h, mask_w = masks.size(-2), masks.size(-1)
@@ -192,13 +191,13 @@ class Trainer:
                             avg_dice, dices_per_class, val_loss = self.validation(epoch)
                             self.mlflow_manager.log_metrics({"val_loss":val_loss}, step=epoch)
                             self.mlflow_manager.log_metrics({"val_dice":avg_dice}, step=epoch)
+                            
                             if best_dice < avg_dice:
+                                print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                                 best_dice = avg_dice
                                 best_val_class = dices_per_class
                                 best_val_loss = val_loss
                                 self.mlflow_manager.log_metric({"best_dice":best_dice}, step=epoch)
-                                
-                                print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                                 save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
                                 
                         if self.max_epoch >= 3 and epoch % (self.max_epoch // 3) == 0:
