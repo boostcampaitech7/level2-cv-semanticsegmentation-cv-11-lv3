@@ -1,6 +1,6 @@
 import mlflow
 import mlflow.pytorch
-
+import os
 class MLflowManager:
     def __init__(self,tracking_uri='https://movie-pregnancy-robert-addressed.trycloudflare.com',experiment_name="default"):
         '''
@@ -44,3 +44,11 @@ class MLflowManager:
               model_dir(str) : 저장할 파일 디렉토리 이름
         '''
         mlflow.pytorch.log_model(model,model_dir)
+    def log_artifacts(self,dir_path):
+        '''
+        디렉토리 내 모든 파일을 Mlflow에 업로드
+        Args: dir_path(str) : 업로드할 디렉토리 경로
+        '''
+        if os.path.exists(dir_path):
+            mlflow.log_artifacts(dir_path)
+            
