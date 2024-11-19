@@ -1,8 +1,13 @@
-checkpoints/
-
-**/inference_results/
+# Ignore all __pycache__ folders
 **/__pycache__/
+__pycache__/
+
+# Ignore Python compiled files
 *.pyc
 *.pyo
 *.csv
 *.png
+
+# Ignore specific directories
+checkpoints/
+**/inference_results/

@@ -7,27 +7,29 @@ fold_list: [0,]
 
 # 앱 설정 정의
 kakao_uuid_path: /data/ephemeral/home/keys/uuid.json
-task: service 연결
+task: fold sheet 연동 test
 access_name: 이상진
 server: 4
 
 # 모델명 및 사전 학습 여부
 model:
-  model_name: DUCKNet
+  model_name: UNet
   model_parameter:
     in_channels: 3
     classes: 29
     pretrained: True
     start_filters: 16
+    deep_supervision: True
+    cgm: True
 
 # batch_size
 train_batch_size: 2
-val_batch_size: 4
+val_batch_size: 2
 test_batch_size: 4
 
 
 # image resize
-image_size: &image_size 128
+image_size: &image_size 1024
 
 # transform 관련
 transform:
@@ -39,7 +41,7 @@ transform:
 lr: 5e-4
 weight_decay: 1e-6
 
-max_epoch: &max_epoch 10
+max_epoch: &max_epoch 100
 
 # loss 관련 설정
 loss: 
@@ -49,11 +51,12 @@ loss:
 loss_parameter: {}
 
 # scheduler 관련 설정
-scheduler_name: CosineAnnealingLR
+scheduler_name: CosineAnnealingWR
 
 # scheduler 필요한 parameter -> dict 형태로 작성
 scheduler_parameter:
-  T_max: *max_epoch
+  T_0: 10
+  T_mult: 2
   eta_min: 1e-6
 
 # random seed값

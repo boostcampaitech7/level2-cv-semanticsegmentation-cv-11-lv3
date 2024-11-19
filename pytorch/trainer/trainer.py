@@ -86,11 +86,14 @@ class Trainer:
 
                 outputs = self.model(images)
 
-                loss = self.criterion(outputs, masks)
                 self.optimizer.zero_grad()
                 with autocast():
                     outputs = self.model(images)
-                    loss = self.criterion(outputs, masks)
+                    if isinstance(outputs, list):
+                        losses = [self.criterion(output, masks) for output in outputs]
+                        loss = sum(losses) / len(losses)
+                    else:
+                        loss = self.criterion(outputs, masks)
 
                 self.scaler.scale(loss).backward()
                 self.scaler.step(self.optimizer)
@@ -111,6 +114,7 @@ class Trainer:
     
 
     def validation(self, epoch):
+        torch.cuda.empty_cache()
         val_start = time.time()
         self.model.eval()
 
@@ -124,19 +128,32 @@ class Trainer:
 
                     outputs = self.model(images)
 
-                    output_h, output_w = outputs.size(-2), outputs.size(-1)
-                    mask_h, mask_w = masks.size(-2), masks.size(-1)
-
-                    # gt와 prediction의 크기가 다른 경우 prediction을 gt에 맞춰 interpolation 합니다.
-                    if output_h != mask_h or output_w != mask_w:
-                        outputs = F.interpolate(outputs, size=(mask_h, mask_w), mode="bilinear")
                     
-                    loss = self.criterion(outputs, masks)
-                    total_loss += loss.item()
+                    if isinstance(outputs, list):  # Deep supervision 처리
+                        avg_output = None
+                        total_outputs = 0
+                        losses = []
 
-                    outputs = torch.sigmoid(outputs)
-                    # outputs = torch.sigmoid(outputs).detach().cpu()
-                    # masks = masks.detach().cpu()
+                        for output in outputs:
+                            if output.size()[-2:] != masks.size()[-2:]:
+                                output = F.interpolate(output, size=masks.shape[-2:], mode="bilinear")
+                            
+                            losses.append(self.criterion(output, masks))
+                            
+                            if avg_output is None:
+                                avg_output = torch.sigmoid(output)
+                            else:
+                                avg_output += torch.sigmoid(output)
+                            total_outputs += 1
+                        
+                        outputs = avg_output / total_outputs
+                        loss = sum(losses) / len(losses)
+                    else:
+                        if outputs.size()[-2:] != masks.size()[-2:]:
+                            outputs = F.interpolate(outputs, size=masks.shape[-2:], mode="bilinear")
+                        loss = self.criterion(outputs, masks)
+                        outputs = torch.sigmoid(outputs)
+                    total_loss += loss.item()
 
                     dice = dice_coef(outputs, masks)
                     dices.append(dice)
@@ -197,7 +214,7 @@ class Trainer:
                                 best_dice = avg_dice
                                 best_val_class = dices_per_class
                                 best_val_loss = val_loss
-                                self.mlflow_manager.log_metric({"best_dice":best_dice}, step=epoch)
+                                self.mlflow_manager.log_metrics({"best_dice":best_dice}, step=epoch)
                                 save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
                                 
                         if self.max_epoch >= 3 and epoch % (self.max_epoch // 3) == 0:
