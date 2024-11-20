@@ -225,10 +225,10 @@ class Trainer:
                                 self.mlflow_manager.log_metrics({f"{class_name}_dice": dice_score.item()}, step=epoch)
                             
                             if best_dice < avg_dice:
+                                print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                                 best_dice = avg_dice
                                 best_val_class = dices_per_class
                                 best_val_loss = val_loss
-                                print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                                 save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
 
                             self.earlystop(avg_dice)

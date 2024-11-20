@@ -1,7 +1,7 @@
 from .DUCKNet.duck_net import DUCKNet
 from .UNet.unet import UNet
 from .fcn_resnet50.fcn_resnet50 import fcn_resnet
-from .NetstedUNet.nestedunet import NestedUNet
+from .NestedUNet.nestedunet import NestedUNet
 from .UNet3plus.unet3plus import UNet3Plus
 
 class ModelSelector():

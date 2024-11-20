@@ -7,9 +7,14 @@ fold_list: [0,1,2,3,4]
 
 # 앱 설정 정의
 kakao_uuid_path: /data/ephemeral/home/keys/uuid.json
-task: kfold ensemble
+task: kfold + CosineWR
 access_name: 유희석
 server: 3
+
+# mlflow
+exp_name: kfold_V2
+run_name: resnet50_kfold+earlystop+CosineWR
+
 
 # 모델명 및 사전 학습 여부
 model:
@@ -73,10 +78,6 @@ val_interval: 1
 
 # checkpoint 저장 경로
 save_dir: ./checkpoints/${model.model_name}
-
-# mlflow
-exp_name: kfold
-run_name: resnet50_kfold+earlystop
 
 # 구글시트
 google_cloud_key_path: /data/ephemeral/home/keys/google_key.json
