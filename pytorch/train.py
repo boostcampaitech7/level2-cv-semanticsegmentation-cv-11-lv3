@@ -24,6 +24,7 @@ from models.modelselector import ModelSelector
 import services.spreadsheet as sheet
 import services.kakao as kakao
 import services.slack as slack
+import cv2 as cv2
 
 def get_folds(cfg):
     folds = []
@@ -56,7 +57,7 @@ def main(cfg):
             model = model_selector.get_model(cfg.model)
             model = model.cuda()
             
-            transform_list = [A.Resize(cfg.transform.Resize.width, cfg.transform.Resize.height)]
+            transform_list = [A.Resize(cfg.transform.Resize.width, cfg.transform.Resize.height, interpolation=cv2.INTER_AREA)]
             transforms = get_transform(transform_list)
 
             train_dataset = XRayTrainDataset(
@@ -111,7 +112,8 @@ def main(cfg):
                         num_class = cfg.model.model_parameter.classes,
                         kakao_uuid_list=uuid_list,
                         access_name=cfg.access_name,
-                        server=cfg.server
+                        server=cfg.server,
+                        earlystop=cfg.early_stopping,
                         )
 
             best_dice, best_val_class = trainer.train()

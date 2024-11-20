@@ -62,6 +62,6 @@ if __name__=="__main__":
 
     image_root = os.path.join(args.image_root,'test/DCM')
 
-    inference_save(filename_and_class, image_root, image_size=args.resize, result_df=result_df, save_dir=save_dir)
+    inference_save(filename_and_class, image_root, result_df=result_df, save_dir=save_dir)
 
 

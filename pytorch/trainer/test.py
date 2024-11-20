@@ -56,7 +56,7 @@ def batch_soft_voting(data_loader, model_paths, thr=0.5):
             # 각 모델의 확률 맵 계산
             outputs_list = []
             for model in models:
-                outputs = model(images)
+                outputs = model(images)['out']
                 outputs = F.interpolate(outputs, size=(2048, 2048), mode="bilinear")
                 outputs = torch.sigmoid(outputs)
                 outputs_list.append(outputs)

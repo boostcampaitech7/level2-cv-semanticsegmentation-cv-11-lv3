@@ -14,7 +14,7 @@ from torch.cuda.amp import autocast, GradScaler
 import services.kakao as kakao
 import services.slack as slack
 import traceback
-
+from .Earlystopping import EarlyStopper
 
 def dice_coef(y_true, y_pred):
         y_true_f = y_true.flatten(2)
@@ -41,7 +41,8 @@ class Trainer:
                  num_class,
                  kakao_uuid_list,
                  access_name,
-                 server):
+                 server,
+                 earlystop):
         
         self.model = model
         self.train_loader = train_loader
@@ -60,6 +61,7 @@ class Trainer:
         self.access_name = access_name
         self.server = server
         self.scaler = GradScaler()
+        self.earlystop = EarlyStopper(patience=earlystop.patience, delta=earlystop.delta)
         
 
     def save_model(self, epoch, dice_score, before_path):
@@ -84,12 +86,13 @@ class Trainer:
             for images, masks in self.train_loader:
                 images, masks = images.cuda(), masks.cuda()
 
-                outputs = self.model(images)
+                # outputs = self.model(images)
+                # loss = self.criterion(outputs, masks)
 
-                loss = self.criterion(outputs, masks)
                 self.optimizer.zero_grad()
                 with autocast():
-                    outputs = self.model(images)
+                    # outputs = self.model(images)
+                    outputs = self.model(images)['out']
                     loss = self.criterion(outputs, masks)
 
                 self.scaler.scale(loss).backward()
@@ -123,7 +126,8 @@ class Trainer:
                     images, masks = images.cuda(), masks.cuda()
 
                     with autocast():  # Mixed precision context
-                        outputs = self.model(images)
+                        # outputs = self.model(images)
+                        outputs = self.model(images)['out']
 
                     output_h, output_w = outputs.size(-2), outputs.size(-1)
                     mask_h, mask_w = masks.size(-2), masks.size(-1)
@@ -183,34 +187,39 @@ class Trainer:
                         "learning_rate": self.optimizer.param_groups[0]['lr']
                     })
             
-            for epoch in range(1, self.max_epoch + 1):
-                
-                train_loss = self.train_epoch(epoch)
-                self.mlflow_manager.log_metric("train_loss", train_loss, step=epoch)
-
-                # validation 주기에 따라 loss를 출력하고 best model을 저장합니다.
-                if epoch % self.val_interval == 0:
-                    avg_dice, dices_per_class, val_loss = self.validation(epoch)
-
-                    self.mlflow_manager.log_metric("val_loss", val_loss, step=epoch)
-                    self.mlflow_manager.log_metric("avg_dice", avg_dice, step=epoch)
-                    
-                    for class_name, dice_score in dices_per_class.items():
-                        self.mlflow_manager.log_metric(f"{class_name}_dice", dice_score.item(), step=epoch)
-                    
-                    if best_dice < avg_dice:
-                        best_dice = avg_dice
-                        best_val_class = dices_per_class
-                        best_val_loss = val_loss
-                        print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
-                        save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
+                    for epoch in range(1, self.max_epoch + 1):
                         
-                if self.max_epoch >= 3 and epoch % (self.max_epoch // 3) == 0:
-                    dices_per_class_str = "\n".join([f"{key}: {value:.4f}" for key, value in best_val_class.items()])
-                    message = f'서버 {self.server}번 {self.access_name}님의\n학습 현황 epoch {epoch}\nbest dice score : {best_dice}\n{dices_per_class_str}'
-                    kakao.send_message(self.kakao_uuid_list, message)
-                    
-                self.scheduler.step()
+                        train_loss = self.train_epoch(epoch)
+                        self.mlflow_manager.log_metrics(metrics={"train_loss": train_loss}, step=epoch)
+
+                        # validation 주기에 따라 loss를 출력하고 best model을 저장합니다.
+                        if epoch % self.val_interval == 0:
+                            avg_dice, dices_per_class, val_loss = self.validation(epoch)
+
+                            self.mlflow_manager.log_metrics(metrics={"val_loss": val_loss}, step=epoch)
+                            self.mlflow_manager.log_metrics(metrics={"val_dice": avg_dice}, step=epoch)
+                            
+                            for class_name, dice_score in dices_per_class.items():
+                                self.mlflow_manager.log_metrics({f"{class_name}_dice": dice_score.item()}, step=epoch)
+                            
+                            if best_dice < avg_dice:
+                                best_dice = avg_dice
+                                best_val_class = dices_per_class
+                                best_val_loss = val_loss
+                                print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
+                                save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
+
+                            self.earlystop(avg_dice)
+                            if self.earlystop.early_stop:
+                                print(f"Early stopping at epoch {epoch} with best dice: {best_dice:.4f}")
+                                break
+                                
+                        if self.max_epoch >= 3 and epoch % (self.max_epoch // 3) == 0:
+                            dices_per_class_str = "\n".join([f"{key}: {value:.4f}" for key, value in best_val_class.items()])
+                            message = f'서버 {self.server}번 {self.access_name}님의\n학습 현황 epoch {epoch}\nbest dice score : {best_dice}\n{dices_per_class_str}'
+                            kakao.send_message(self.kakao_uuid_list, message)
+                            
+                        self.scheduler.step()
         except Exception as e:
             error_message = (
             f"서버 {self.server}번 {self.access_name}님의 학습 중 에러 발생\nError: {str(e)}"

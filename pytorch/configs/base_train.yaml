@@ -3,17 +3,17 @@ image_root: /data/ephemeral/home/train/DCM
 fold_root: /data/ephemeral/home/folds
 label_root: /data/ephemeral/home/train/outputs_json
 test_root: /data/ephemeral/home/test
-fold_list: [0,]
+fold_list: [0,1,2,3,4]
 
 # 앱 설정 정의
 kakao_uuid_path: /data/ephemeral/home/keys/uuid.json
-task: service 연결
-access_name: 이상진
-server: 4
+task: kfold ensemble
+access_name: 유희석
+server: 3
 
 # 모델명 및 사전 학습 여부
 model:
-  model_name: DUCKNet
+  model_name: fcn_resnet50
   model_parameter:
     in_channels: 3
     classes: 29
@@ -21,13 +21,13 @@ model:
     start_filters: 16
 
 # batch_size
-train_batch_size: 2
+train_batch_size: 8
 val_batch_size: 4
 test_batch_size: 4
 
 
 # image resize
-image_size: &image_size 128
+image_size: &image_size 1024
 
 # transform 관련
 transform:
@@ -39,7 +39,13 @@ transform:
 lr: 5e-4
 weight_decay: 1e-6
 
-max_epoch: &max_epoch 10
+max_epoch: &max_epoch 100
+
+# Early Stopping 설정
+early_stopping:
+  patience: 7
+  delta: 0.0001
+
 
 # loss 관련 설정
 loss: 
@@ -66,8 +72,8 @@ val_interval: 1
 save_dir: ./checkpoints/${model.model_name}
 
 # mlflow
-exp_name: refactor_test
-run_name: test_run
+exp_name: kfold
+run_name: resnet50_kfold+earlystop
 
 # 구글시트
 google_cloud_key_path: /data/ephemeral/home/keys/google_key.json

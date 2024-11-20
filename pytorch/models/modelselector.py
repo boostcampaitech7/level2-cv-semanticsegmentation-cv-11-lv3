@@ -1,5 +1,6 @@
 from .DUCKNet.duck_net import DUCKNet
 from .UNet.unet import UNet
+from .fcn_resnet50.fcn_resnet50 import fcn_resnet
 
 class ModelSelector():
     # def __init__(self, model_name, in_channels, num_classes, starting_filters=None):
@@ -7,7 +8,8 @@ class ModelSelector():
     def __init__(self):
         self.model_list = {
             "UNet": UNet,
-            "DUCKNet": DUCKNet
+            "DUCKNet": DUCKNet,
+            "fcn_resnet50": fcn_resnet
         }
         
     def get_model(self, model_cfg):
@@ -28,6 +30,10 @@ class ModelSelector():
             num_classes = model_params.get("classes", 29)
             starting_filters = model_params.get("start_filters", 17)
             model = model_class(in_channels=in_channels, num_classes=num_classes, starting_filters=starting_filters)
+        elif model_name == 'fcn_resnet50':
+            num_classes = model_params.get("classes", 29)
+            model_init = model_class(num_classes=num_classes)
+            model = model_init.get_model()
         
         return model
             
