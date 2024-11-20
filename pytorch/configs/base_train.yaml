@@ -19,6 +19,8 @@ model:
     classes: 29
     pretrained: True
     start_filters: 16
+    deep_supervision: True
+    cgm: True
 
 # batch_size
 train_batch_size: 8
@@ -43,7 +45,7 @@ max_epoch: &max_epoch 100
 
 # Early Stopping 설정
 early_stopping:
-  patience: 7
+  patience: 35
   delta: 0.0001
 
 
@@ -55,11 +57,12 @@ loss:
 loss_parameter: {}
 
 # scheduler 관련 설정
-scheduler_name: CosineAnnealingLR
+scheduler_name: CosineAnnealingWR
 
 # scheduler 필요한 parameter -> dict 형태로 작성
 scheduler_parameter:
-  T_max: *max_epoch
+  T_0: 10
+  T_mult: 2
   eta_min: 1e-6
 
 # random seed값

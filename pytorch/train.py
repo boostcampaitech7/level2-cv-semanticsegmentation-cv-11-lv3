@@ -12,10 +12,9 @@ import gc
 from utils.mlflow import MLflowManager
 import traceback
 
-from utils.util import set_seed, find_file, get_classes, extract_uuid2list
+from utils.util import set_seed, get_classes, extract_uuid2list
 from transform.transform import get_transform
 from data.train_dataset import XRayTrainDataset
-from data.test_dataset import XRayInferenceDataset
 from trainer.trainer import Trainer
 from scheduler.scheduler_selector import SchedulerSelector
 from loss.loss_selector import LossSelector
@@ -40,8 +39,11 @@ def main(cfg):
     try:
         set_seed(cfg.seed)
         classes = get_classes()
-
+        
         folds = get_folds(cfg)
+        
+        is_folds = len(folds) > 1
+        
         mlflow_manager = MLflowManager(experiment_name=cfg.exp_name)
         
         uuid_list = extract_uuid2list(cfg.kakao_uuid_path)
@@ -117,14 +119,19 @@ def main(cfg):
                         )
 
             best_dice, best_val_class = trainer.train()
-            if best_dice == None or best_val_class == None:
+            if best_dice == 0:
                 continue
             else:
                 dices_per_class_str = "\n".join([f"{key}: {value:.4f}" for key, value in best_val_class.items()])
                 print(dices_per_class_str)
-                kakao.send_message(uuid_list, f"{cfg.access_name}님이 서버 {cfg.server}번\n학습을 완료하였습니다.\nbest dice{best_dice}\n{dices_per_class_str}")
-                slack.send_slack_notification(f"{cfg.access_name}님이 서버 {cfg.server}번\n학습을 완료하였습니다.\nbest dice{best_dice}\n{dices_per_class_str}")
-                sheet.update_server_status(cfg.server, cfg.access_name, False, cfg.task)
+                
+                if is_folds:
+                    message = f"{cur_fold} 학습을 완료하였습니다."    
+                else:
+                    message = "학습을 완료하였습니다."
+                    
+                kakao.send_message(uuid_list, f"{cfg.access_name}님이 서버 {cfg.server}번\n{message}\nbest dice{best_dice}\n{dices_per_class_str}")
+                slack.send_slack_notification(f"{cfg.access_name}님이 서버 {cfg.server}번\n{message}\nbest dice{best_dice}\n{dices_per_class_str}")
                 
                 append_data = {"model": cfg.model.model_name,
                             "scheduler": cfg.scheduler_name,
@@ -132,7 +139,7 @@ def main(cfg):
                             "lr": cfg.lr,
                             "epoch": cfg.max_epoch,
                             "metric": cfg.loss.type,
-                            "task": cfg.task,
+                            "task": cfg.task + f"( {cur_fold})",
                             "dice coef": best_dice,
                             "class score": dices_per_class_str,
                             "public score": "-"}
