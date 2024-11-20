@@ -20,7 +20,7 @@ class UNet3Plus(nn.Module):
         filters = [64, 128, 256, 512, 1024]
 
         ## -------------Encoder--------------
-        self.conv1 = unetConv2(self.n_channels, filters[0], self.is_batchnorm)
+        self.conv1 = unetConv2(self.in_channels, filters[0], self.is_batchnorm)
         self.maxpool1 = nn.MaxPool2d(kernel_size=2)
 
         self.conv2 = unetConv2(filters[0], filters[1], self.is_batchnorm)
@@ -202,9 +202,9 @@ class UNet3Plus(nn.Module):
         # initialise weights
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                init_weights(m, init_type='kaiming')
+                init_weights(m)
             elif isinstance(m, nn.BatchNorm2d):
-                init_weights(m, init_type='kaiming')
+                init_weights(m)
 
 
     def dotProduct(self,seg,cls):
@@ -286,5 +286,8 @@ class UNet3Plus(nn.Module):
             d4 = self.dotProduct(d4, cls_branch_max)
             d5 = self.dotProduct(d5, cls_branch_max)
         if self.deep_supervision:
-            return d1, d2, d3, d4, d5
+            return [d1, d2, d3, d4, d5]
+        if self.cgm:
+            d1 = self.dotProduct(d1, cls_branch_max)
+            return d1
         return d1

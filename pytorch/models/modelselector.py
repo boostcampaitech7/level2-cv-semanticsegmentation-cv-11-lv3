@@ -1,13 +1,15 @@
 from .DUCKNet.duck_net import DUCKNet
 from .UNet.unet import UNet
-from .NetstedUNet.nestedunet import NestedUNet
+from .NestedUNet.nestedunet import NestedUNet
 from .UNet3plus.unet3plus import UNet3Plus
+from .fcn_resnet50.fcn_resnet50 import fcn_resnet
 
 class ModelSelector():
     def __init__(self):
         self.model_list = {
             "UNet": UNet,
             "DUCKNet": DUCKNet,
+            "fcn_resnet50": fcn_resnet,
             "NestedUNet": NestedUNet,
             "UNet3Plus": UNet3Plus
         }
@@ -41,6 +43,10 @@ class ModelSelector():
             deep_supervision = model_params.get("deep_supervision", False)
             cgm = model_params.get("cgm", False)
             model = model_class(in_channels=in_channels, num_classes=num_classes, deep_supervision=deep_supervision, cgm=cgm)
+        elif model_name == 'fcn_resnet50':
+            num_classes = model_params.get("classes", 29)
+            model_init = model_class(num_classes=num_classes)
+            model = model_init.get_model()
         return model
             
         

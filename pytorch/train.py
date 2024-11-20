@@ -113,7 +113,8 @@ def main(cfg):
                         num_class = cfg.model.model_parameter.classes,
                         kakao_uuid_list=uuid_list,
                         access_name=cfg.access_name,
-                        server=cfg.server
+                        server=cfg.server,
+                        earlystop=cfg.early_stopping
                         )
 
             best_dice, best_val_class = trainer.train()
@@ -137,7 +138,7 @@ def main(cfg):
                             "lr": cfg.lr,
                             "epoch": cfg.max_epoch,
                             "metric": cfg.loss.type,
-                            "task": cfg.task + f"( {cur_fold})",
+                            "task": cfg.task + f" ({cur_fold})",
                             "dice coef": best_dice,
                             "class score": dices_per_class_str,
                             "public score": "-"}

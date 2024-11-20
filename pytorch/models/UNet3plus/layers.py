@@ -39,7 +39,7 @@ class unetConv2(nn.Module):
 
         # initialise the blocks
         for m in self.children():
-            init_weights(m, init_type='kaiming')
+            init_weights(m)
 
 
     def forward(self, inputs):

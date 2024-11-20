@@ -14,6 +14,7 @@ from torch.cuda.amp import autocast, GradScaler
 import services.kakao as kakao
 import services.slack as slack
 import traceback
+from .Earlystopping import EarlyStopper
 
 
 def dice_coef(y_true, y_pred):
@@ -41,7 +42,8 @@ class Trainer:
                  num_class,
                  kakao_uuid_list,
                  access_name,
-                 server):
+                 server,
+                 earlystop):
         
         self.model = model
         self.train_loader = train_loader
@@ -59,6 +61,7 @@ class Trainer:
         self.kakao_uuid_list = kakao_uuid_list
         self.access_name = access_name
         self.server = server
+        self.earlystop = EarlyStopper(patience=earlystop.patience, delta=earlystop.delta)
         self.scaler = GradScaler()
         
 
@@ -127,7 +130,7 @@ class Trainer:
                     images, masks = images.cuda(), masks.cuda()
 
                     outputs = self.model(images)
-
+                    # outputs = self.model(images)['out']
                     
                     if isinstance(outputs, list):  # Deep supervision 처리
                         avg_output = None
@@ -202,7 +205,7 @@ class Trainer:
                     for epoch in range(1, self.max_epoch + 1):
                         
                         train_loss = self.train_epoch(epoch)
-                        self.mlflow_manager.log_metrics({"train_loss":train_loss},step=epoch)
+                        self.mlflow_manager.log_metrics(metrics={"train_loss":train_loss},step=epoch)
                         # validation 주기에 따라 loss를 출력하고 best model을 저장합니다.
                         if epoch % self.val_interval == 0:
                             avg_dice, dices_per_class, val_loss = self.validation(epoch)
@@ -216,6 +219,11 @@ class Trainer:
                                 best_val_loss = val_loss
                                 self.mlflow_manager.log_metrics({"best_dice":best_dice}, step=epoch)
                                 save_best(self.model, self.save_dir, cur_fold=self.cur_fold)
+                                
+                            self.earlystop(avg_dice)
+                            if self.earlystop.early_stop:
+                                print(f"Early Stopping at epoch {epoch} with best dice : {best_dice:.4f}")
+                                break
                                 
                         if self.max_epoch >= 3 and epoch % (self.max_epoch // 3) == 0:
                             dices_per_class_str = "\n".join([f"{key}: {value:.4f}" for key, value in best_val_class.items()])
