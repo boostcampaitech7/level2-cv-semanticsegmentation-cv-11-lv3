@@ -7,7 +7,7 @@ def normalize_image(img):
     이미지 정규화: [0, 1] 범위로 변환
     """
     img = img - img.min()
-    img = img / (img.max() + 1e-7)  # 0으로 나누는 것을 방지하기 위해 작은 값을 더함
+    img = img / (img.max() + 1e-7)
     return img
 
 def visualize_and_save_images(data_loader, class_names, save_dir=None, max_visualizations=3):
