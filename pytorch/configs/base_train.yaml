@@ -3,28 +3,28 @@ image_root: /data/ephemeral/home/train/DCM
 fold_root: /data/ephemeral/home/folds
 label_root: /data/ephemeral/home/train/outputs_json
 test_root: /data/ephemeral/home/test
-fold_list: [0,]
+fold_list: [4,]
 
 # 앱 설정 정의
 kakao_uuid_path: /data/ephemeral/home/keys/uuid.json
-task: UNet3Plus Test Super vision
+task: UNet++ annotation 수정본, 1024,\nno supervision\n no cgm
 access_name: 이상진
 server: 4
 
 # mlflow
-exp_name: refactor_test
-run_name: test_run
+exp_name: lee
+run_name: unet2++
 
 # 모델명 및 사전 학습 여부
 model:
-  model_name: UNet3Plus
+  model_name: NestedUNet
   model_parameter:
     in_channels: 3
     classes: 29
     pretrained: True
-    start_filters: 16
+    start_filters: 17
     deep_supervision: False
-    cgm: True
+    cgm: False
 
 # batch_size
 train_batch_size: 2
@@ -33,7 +33,7 @@ test_batch_size: 4
 
 
 # image resize
-image_size: &image_size 128
+image_size: &image_size 1024
 
 # transform 관련
 transform:
@@ -45,10 +45,10 @@ transform:
 lr: 5e-4
 weight_decay: 1e-6
 
-max_epoch: &max_epoch 3
+max_epoch: &max_epoch 150
 
 early_stopping:
-  patience: 35
+  patience: 25
   delta: 0.0001
 
 # loss 관련 설정
@@ -63,9 +63,10 @@ scheduler_name: CosineAnnealingWR
 
 # scheduler 필요한 parameter -> dict 형태로 작성
 scheduler_parameter:
-  T_0: 10
+  T_0: 25
   T_mult: 2
   eta_min: 1e-6
+  verbose: True
 
 # random seed값
 seed: 21
