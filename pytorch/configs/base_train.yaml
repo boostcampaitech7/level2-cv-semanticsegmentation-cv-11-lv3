@@ -1,23 +1,23 @@
 # data 관련 설정
-image_root: /data/ephemeral/home/train/DCM
+image_root: /data/ephemeral/home/data/train/DCM
 fold_root: /data/ephemeral/home/folds
-label_root: /data/ephemeral/home/train/outputs_json
-test_root: /data/ephemeral/home/test
+label_root: /data/ephemeral/home/data/train/outputs_json
+test_root: /data/ephemeral/home/data/test
 fold_list: [0,]
 
 # 앱 설정 정의
 kakao_uuid_path: /data/ephemeral/home/keys/uuid.json
-task: UNet3Plus Test Super vision
-access_name: 이상진
-server: 4
+task: SegFormer
+access_name: 임용섭
+server: 1
 
 # mlflow
-exp_name: refactor_test
-run_name: test_run
+exp_name: ys
+run_name: SegFormer_100ep
 
 # 모델명 및 사전 학습 여부
 model:
-  model_name: UNet3Plus
+  model_name: SegFormer
   model_parameter:
     in_channels: 3
     classes: 29
@@ -33,7 +33,7 @@ test_batch_size: 4
 
 
 # image resize
-image_size: &image_size 128
+image_size: &image_size 224
 
 # transform 관련
 transform:
@@ -42,10 +42,10 @@ transform:
     height: *image_size
 
 # 학습 관련 하이퍼파라미터
-lr: 5e-4
+lr: 5e-5
 weight_decay: 1e-6
 
-max_epoch: &max_epoch 3
+max_epoch: &max_epoch 100
 
 early_stopping:
   patience: 35
@@ -63,9 +63,9 @@ scheduler_name: CosineAnnealingWR
 
 # scheduler 필요한 parameter -> dict 형태로 작성
 scheduler_parameter:
-  T_0: 10
-  T_mult: 2
-  eta_min: 1e-6
+  T_0: 20 # 웜업
+  T_mult: 2 # 주기? 곱셈해서 하는거 
+  eta_min: 1e-6 #최소 러닝레이트
 
 # random seed값
 seed: 21

@@ -3,7 +3,7 @@ from .UNet.unet import UNet
 from .NestedUNet.nestedunet import NestedUNet
 from .UNet3plus.unet3plus import UNet3Plus
 from .fcn_resnet50.fcn_resnet50 import fcn_resnet
-
+from .SegFormer.SegFormer import SegFormer
 class ModelSelector():
     def __init__(self):
         self.model_list = {
@@ -11,7 +11,8 @@ class ModelSelector():
             "DUCKNet": DUCKNet,
             "fcn_resnet50": fcn_resnet,
             "NestedUNet": NestedUNet,
-            "UNet3Plus": UNet3Plus
+            "UNet3Plus": UNet3Plus,
+            "SegFormer":SegFormer
         }
         
     def get_model(self, model_cfg):
@@ -22,7 +23,8 @@ class ModelSelector():
             raise ValueError(f"사용가능한 모델: {list(self.model_list.keys())}")
         
         model_class = self.model_list[model_name]
-        
+        print(model_class)
+
         if model_name == 'UNet':
             in_channels = model_params.get("in_channels", 3)
             num_classes = model_params.get("classes", 29)
@@ -47,6 +49,12 @@ class ModelSelector():
             num_classes = model_params.get("classes", 29)
             model_init = model_class(num_classes=num_classes)
             model = model_init.get_model()
+        elif model_name =='Segmenter':
+            num_classes=model_params.get("classes",29)
+            model=model_class(num_classes=num_classes)
+        elif model_name =='SegFormer':
+            num_classes=model_params.get("classes",29)
+            model=model_class(num_classes=num_classes)
         return model
             
         
