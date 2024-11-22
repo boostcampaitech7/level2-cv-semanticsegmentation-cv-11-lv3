@@ -21,40 +21,40 @@ class EfficientSelfAttention(nn.Module):
         self.head_dim = dim // num_heads
         assert self.head_dim * num_heads == dim, "dim must be divisible by num_heads"
 
-        # Q, K, V linear layers
+    
         self.q_proj = nn.Linear(dim, dim)
         self.k_proj = nn.Linear(dim, dim)
         self.v_proj = nn.Linear(dim, dim)
 
-        # Sequence Reduction
+      
         self.reduction_ratio = reduction_ratio
         self.reduction = nn.Linear(self.head_dim * reduction_ratio, self.head_dim)
 
-        # Output projection
+        
         self.out_proj = nn.Linear(dim, dim)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        # x: [B, N, C], N = sequence length, C = embedding dimension
+        
         B, N, C = x.shape
 
-        # Query, Key, Value projections
+        
         Q = self.q_proj(x).reshape(B, N, self.num_heads, self.head_dim).permute(0, 2, 1, 3)
         K = self.k_proj(x).reshape(B, N, self.num_heads, self.head_dim).permute(0, 2, 1, 3)
         V = self.v_proj(x).reshape(B, N, self.num_heads, self.head_dim).permute(0, 2, 1, 3)
 
-        # Sequence reduction on K and V
+        
         K_reduced = K.reshape(B, self.num_heads, N // self.reduction_ratio, -1)
         K_reduced = self.reduction(K_reduced)
         V_reduced = V.reshape(B, self.num_heads, N // self.reduction_ratio, -1)
         V_reduced = self.reduction(V_reduced)
 
-        # Scaled Dot-Product Attention
+        
         attn = (Q @ K_reduced.transpose(-2, -1)) / (self.head_dim ** 0.5)
         attn = attn.softmax(dim=-1)
         attn = self.dropout(attn)
 
-        # Attention output
+        
         output = (attn @ V_reduced).permute(0, 2, 1, 3).reshape(B, N, C)
         output = self.out_proj(output)
         return output
@@ -96,11 +96,11 @@ class TransformerBlock(nn.Module):
         N = H * W  
         x_flat = x.flatten(2).permute(0, 2, 1)  
 
-        # Self-Attention + Residual
+        
         x_attn = self.attn(self.norm1(x_flat)) 
         x = x + x_attn.permute(0, 2, 1).reshape(B, C, H, W)  
 
-        # Mix-FFN + Residual
+        
         x_flat = x.flatten(2).permute(0, 2, 1) 
         x_ffn = self.mlp(self.norm2(x_flat))  
         x = x + x_ffn.permute(0, 2, 1).reshape(B, C, H, W)  

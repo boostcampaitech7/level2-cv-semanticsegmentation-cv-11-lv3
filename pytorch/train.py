@@ -11,9 +11,11 @@ from omegaconf import OmegaConf
 import gc
 from utils.mlflow import MLflowManager
 import traceback
+import matplotlib.pyplot as plt
 
 from utils.util import set_seed, get_classes, extract_uuid2list
 from transform.transform import get_transform
+from trainer.visualize import visualize_and_save_images
 from data.train_dataset import XRayTrainDataset
 from trainer.trainer import Trainer
 from scheduler.scheduler_selector import SchedulerSelector
@@ -88,6 +90,9 @@ def main(cfg):
             valid_loader = DataLoader(
                 dataset=val_dataset, batch_size=cfg.val_batch_size, shuffle=False, num_workers=0, drop_last=False
             )
+            
+            print("증강된 데이터 시각화:")
+            visualize_and_save_images(train_loader, classes, save_dir="./overlay_images", max_visualizations=3)
 
             optimizer = optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
             scheduler_selector = SchedulerSelector(optimizer)
