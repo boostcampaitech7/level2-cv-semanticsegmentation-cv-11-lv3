@@ -3,7 +3,9 @@ from .UNet.unet import UNet
 from .NestedUNet.nestedunet import NestedUNet
 from .UNet3plus.unet3plus import UNet3Plus
 from .fcn_resnet50.fcn_resnet50 import fcn_resnet
+from .RAPUNet.rapunet import RAPUNet
 from .SegFormer.SegFormer import SegFormer
+
 class ModelSelector():
     def __init__(self):
         self.model_list = {
@@ -12,7 +14,8 @@ class ModelSelector():
             "fcn_resnet50": fcn_resnet,
             "NestedUNet": NestedUNet,
             "UNet3Plus": UNet3Plus,
-            "SegFormer":SegFormer
+            "RAPUNet": RAPUNet,
+            "SegFormer": SegFormer,
         }
         
     def get_model(self, model_cfg):
@@ -49,12 +52,14 @@ class ModelSelector():
             num_classes = model_params.get("classes", 29)
             model_init = model_class(num_classes=num_classes)
             model = model_init.get_model()
-        elif model_name =='Segmenter':
-            num_classes=model_params.get("classes",29)
-            model=model_class(num_classes=num_classes)
+        elif model_name == "RAPUNet":
+            in_channels = model_params.get("in_channels", 3)
+            num_classes = model_params.get("classes", 29)
+            starting_filters = model_params.get("start_filters", 17)
+            model = model_class(in_channels=in_channels, num_classes=num_classes, starting_filters=starting_filters)
         elif model_name =='SegFormer':
             num_classes=model_params.get("classes",29)
-            model=model_class(num_classes=num_classes)
+            model=model_class(in_channels=in_channels ,num_classes=num_classes)
         return model
             
         

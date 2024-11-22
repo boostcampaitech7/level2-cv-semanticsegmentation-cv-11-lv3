@@ -1,4 +1,5 @@
 from torch.optim import lr_scheduler
+from .CustomCAWR.CustomCosineAnnealingWarmupRestarts import CustomCosineAnnealingWarmupRestarts
 
 # MultiStepLR
 def multi_step_lr(optimizer, **scheduler_parameter):
@@ -10,6 +11,9 @@ def cosine_annealing_lr(optimizer, **scheduler_parameter):
 
 def cosine_annealing_warm_restarts(optimizer, **scheduler_parameter):
     return lr_scheduler.CosineAnnealingWarmRestarts(optimizer, **scheduler_parameter)
+
+def custom_cosine_annealing_warmup_restarts(optimizer, **scheduler_parameter):
+    return CustomCosineAnnealingWarmupRestarts(optimizer=optimizer, **scheduler_parameter)
 
 class SchedulerSelector():
     """
@@ -24,7 +28,8 @@ class SchedulerSelector():
         self.scheduler_classes = {
             "MultiStepLR" : multi_step_lr,
             "CosineAnnealingLR" : cosine_annealing_lr,
-            "CosineAnnealingWR" : cosine_annealing_warm_restarts
+            "CosineAnnealingWR" : cosine_annealing_warm_restarts,
+            "CustomCAWR" : custom_cosine_annealing_warmup_restarts,
         }
         self.optimizer = optimizer
 
