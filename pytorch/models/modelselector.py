@@ -3,7 +3,6 @@ from .UNet.unet import UNet
 from .NestedUNet.nestedunet import NestedUNet
 from .UNet3plus.unet3plus import UNet3Plus
 from .fcn_resnet50.fcn_resnet50 import fcn_resnet
-from .Segmenter.Segmenter import Segmenter
 from .SegFormer.SegFormer import SegFormer
 class ModelSelector():
     def __init__(self):
