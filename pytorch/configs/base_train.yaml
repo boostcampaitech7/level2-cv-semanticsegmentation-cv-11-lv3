@@ -1,5 +1,5 @@
 # data 관련 설정
-image_root: /data/ephemeral/home/train/DCM
+image_root: /data/ephemeral/home/data/train/DCM
 fold_root: /data/ephemeral/home/folds
 label_root: /data/ephemeral/home/train/outputs_json
 test_root: /data/ephemeral/home/test
@@ -32,7 +32,6 @@ val_batch_size: 2
 test_batch_size: 4
 
 
-# image resize
 image_size: &image_size 1024
 
 # transform 관련
@@ -42,10 +41,11 @@ transform:
     height: *image_size
 
 # 학습 관련 하이퍼파라미터
-lr: 5e-4
+lr: 5e-5
 weight_decay: 1e-6
 
 max_epoch: &max_epoch 150
+
 
 early_stopping:
   patience: 25

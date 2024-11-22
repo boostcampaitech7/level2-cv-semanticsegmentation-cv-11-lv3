@@ -26,7 +26,8 @@ class ModelSelector():
             raise ValueError(f"사용가능한 모델: {list(self.model_list.keys())}")
         
         model_class = self.model_list[model_name]
-        
+        print(model_class)
+
         if model_name == 'UNet':
             in_channels = model_params.get("in_channels", 3)
             num_classes = model_params.get("classes", 29)
