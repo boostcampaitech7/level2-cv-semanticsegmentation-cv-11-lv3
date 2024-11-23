@@ -1,5 +1,4 @@
-from .loss import CustomBCEWithLogitsLoss
-from .loss import combine_loss
+from .loss import CustomBCEWithLogitsLoss, FocalLoss, DiceLoss, IoULoss, CombineLoss
 
 class LossSelector():
     """
@@ -11,13 +10,18 @@ class LossSelector():
     """
     def __init__(self) -> None:
         self.loss_classes = {
-            "BCEWithLogitsLoss" : CustomBCEWithLogitsLoss,
+            "BCEL": CustomBCEWithLogitsLoss,
+            "Focal": FocalLoss,
+            "Dice": DiceLoss,
+            "IoU": IoULoss,
         }
 
-    def get_loss(self, loss, **loss_parameter):
-        if loss.type == "CombineLoss":
-            return combine_loss
+    def get_loss(self, loss_config, **loss_parameters):
+        if loss_config.type == "CombineLoss":
+            loss_list = [self.loss_classes[name]() for name in loss_config.loss_list]
+            weights = loss_config.weights
+            return CombineLoss(loss_list, weights, **loss_parameters)
 
         else:
-            loss_name = loss.loss_list[0]
-            return self.loss_classes.get(loss_name, None)(**loss_parameter)
+            loss_name = loss_config.loss_list[0]
+            return self.loss_classes.get(loss_name, None)(**loss_parameters)
