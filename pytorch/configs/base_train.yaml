@@ -1,5 +1,5 @@
 # data 관련 설정
-image_root: /data/ephemeral/home/data/train/DCM
+image_root: /data/ephemeral/home/train/DCM
 fold_root: /data/ephemeral/home/folds
 label_root: /data/ephemeral/home/train/outputs_json
 test_root: /data/ephemeral/home/test
@@ -7,32 +7,32 @@ fold_list: [4,]
 
 # 앱 설정 정의
 kakao_uuid_path: /data/ephemeral/home/keys/uuid.json
-task: UNet++ annotation 수정본, 1024,\nno supervision\n no cgm
+task: Loss 함수 -> 클래스로 변경 후 loss 실험, No aug
 access_name: 이상진
 server: 4
 
 # mlflow
 exp_name: lee
-run_name: unet2++
+run_name: DuckNet_Combine(DICE0.5,BCE0.5)
 
 # 모델명 및 사전 학습 여부
 model:
-  model_name: NestedUNet
+  model_name: DUCKNet
   model_parameter:
     in_channels: 3
     classes: 29
     pretrained: True
-    start_filters: 17
+    start_filters: 16
     deep_supervision: False
     cgm: False
 
 # batch_size
-train_batch_size: 2
+train_batch_size: 4
 val_batch_size: 2
 test_batch_size: 4
 
 
-image_size: &image_size 1024
+image_size: &image_size 256
 
 # transform 관련
 transform:
@@ -41,10 +41,10 @@ transform:
     height: *image_size
 
 # 학습 관련 하이퍼파라미터
-lr: 5e-5
+lr: 5e-4
 weight_decay: 1e-6
 
-max_epoch: &max_epoch 150
+max_epoch: &max_epoch 10
 
 
 early_stopping:
@@ -53,20 +53,23 @@ early_stopping:
 
 # loss 관련 설정
 loss: 
-  type: CombineLoss             # CombineLoss / Default
-  loss_list: [binary_cross_entropy_with_logits, dice]
+  type: CombineLoss    #CombineLoss & None
+  loss_list: ["Dice", "BCEL"]
+  weights: [0.5, 0.5]
 # loss에 필요한 parameter -> dict 형태로 작성
 loss_parameter: {}
 
 # scheduler 관련 설정
-scheduler_name: CosineAnnealingWR
+scheduler_name: CustomCAWR
 
 # scheduler 필요한 parameter -> dict 형태로 작성
 scheduler_parameter:
-  T_0: 25
-  T_mult: 2
-  eta_min: 1e-6
-  verbose: True
+  first_cycle_steps: 25
+  cycle_mult: 2
+  max_lr: 5e-4
+  min_lr: 1e-6
+  warmup_steps: 10
+  gamma: 0.8
 
 # random seed값
 seed: 21
