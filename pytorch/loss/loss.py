@@ -23,6 +23,7 @@ class DiceLoss(nn.Module):
         self.smooth = smooth
         
     def forward(self, preds, targets):
+        preds = F.sigmoid(preds)
         preds = preds.contiguous()
         targets = targets.contiguous()
         intersection = (preds * targets).sum(dim=2).sum(dim=2)
