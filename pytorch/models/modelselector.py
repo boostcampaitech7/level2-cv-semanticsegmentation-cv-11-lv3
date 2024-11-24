@@ -5,6 +5,7 @@ from .UNet3plus.unet3plus import UNet3Plus
 from .fcn_resnet50.fcn_resnet50 import fcn_resnet
 from .RAPUNet.rapunet import RAPUNet
 from .SegFormer.SegFormer import SegFormer
+from .CUSTOM.custom_unet import CustomUNet
 
 class ModelSelector():
     def __init__(self):
@@ -16,6 +17,7 @@ class ModelSelector():
             "UNet3Plus": UNet3Plus,
             "RAPUNet": RAPUNet,
             "SegFormer": SegFormer,
+            "CustomUNet": CustomUNet
         }
         
     def get_model(self, model_cfg):
@@ -60,6 +62,10 @@ class ModelSelector():
         elif model_name =='SegFormer':
             num_classes=model_params.get("classes",29)
             model=model_class(in_channels=in_channels ,num_classes=num_classes)
+        elif model_name == "CustomUNet":
+            in_channels = model_params.get("in_channels", 3)
+            num_classes = model_params.get("classes", 29)
+            model = model_class(in_channels=in_channels, num_classes=num_classes)
         return model
             
         

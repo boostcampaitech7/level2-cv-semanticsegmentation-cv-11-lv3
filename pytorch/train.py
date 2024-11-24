@@ -91,8 +91,8 @@ def main(cfg):
                 dataset=val_dataset, batch_size=cfg.val_batch_size, shuffle=False, num_workers=0, drop_last=False
             )
             
-            print("증강된 데이터 시각화:")
-            visualize_and_save_images(train_loader, classes, save_dir="./overlay_images", max_visualizations=3)
+            # print("증강된 데이터 시각화:")
+            # visualize_and_save_images(train_loader, classes, save_dir="./overlay_images", max_visualizations=3)
 
             optimizer = optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
             scheduler_selector = SchedulerSelector(optimizer)
