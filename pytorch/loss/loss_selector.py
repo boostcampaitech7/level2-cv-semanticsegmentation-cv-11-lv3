@@ -1,4 +1,4 @@
-from .loss import CustomBCEWithLogitsLoss, FocalLoss, DiceLoss, IoULoss, CombineLoss
+from .loss import CustomBCEWithLogitsLoss, FocalLoss, DiceLoss, IoULoss, CombineLoss, FocalTveskyLoss
 
 class LossSelector():
     """
@@ -14,6 +14,7 @@ class LossSelector():
             "Focal": FocalLoss,
             "Dice": DiceLoss,
             "IoU": IoULoss,
+            "FocalTve": FocalTveskyLoss,
         }
 
     def get_loss(self, loss_config, **loss_parameters):

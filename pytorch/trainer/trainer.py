@@ -229,6 +229,7 @@ class Trainer:
                             dices_per_class_str = "\n".join([f"{key}: {value:.4f}" for key, value in best_val_class.items()])
                             message = f'서버 {self.server}번 {self.access_name}님의\n학습 현황 epoch {epoch}\nbest dice score : {best_dice}\n{dices_per_class_str}'
                             kakao.send_message(self.kakao_uuid_list, message)
+                            slack.send_slack_notification(message=message)
                             
                         self.scheduler.step()
         except Exception as e:

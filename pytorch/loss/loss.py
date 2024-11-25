@@ -28,19 +28,17 @@ class DiceLoss(nn.Module):
         preds = preds.contiguous()
         targets = targets.contiguous()
         intersection = (preds * targets).sum(dim=2).sum(dim=2)
-        loss = (1 - ((2. * intersection + self.smooth) / (preds.sum(dim=2).sum(dim=2) +   targets.sum(dim=2).sum(dim=2) + self.smooth)))
+        loss = (1 - ((2. * intersection + self.smooth) / (preds.sum(dim=2).sum(dim=2) + targets.sum(dim=2).sum(dim=2) + self.smooth)))
         return loss.mean()
 
 class FocalTveskyLoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
         super(FocalTveskyLoss, self).__init__()
 
-    def forward(self, preds, targets, smooth=1, alpha=0.5, beta=0.5, gamma=1):
+    def forward(self, preds, targets, smooth=1, alpha=0.4, beta=0.6, gamma=1):
         preds = F.sigmoid(preds)
         preds = preds.view(-1)
         targets = targets.view(-1)
-        
-        #True Positives, False Positives & False Negatives
         TP = (preds * targets).sum()    
         FP = ((1-targets) * preds).sum()
         FN = (targets * (1-preds)).sum()
@@ -99,7 +97,7 @@ def lovasz_grad(gt_sorted):
     intersection = gts - gt_sorted.float().cumsum(0)
     union = gts + (1 - gt_sorted).float().cumsum(0)
     jaccard = 1. - intersection / union
-    if p > 1:  # cover 1-pixel case
+    if p > 1:
         jaccard[1:p] = jaccard[1:p] - jaccard[0:-1]
     return jaccard
 

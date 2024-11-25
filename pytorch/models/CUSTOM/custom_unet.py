@@ -6,12 +6,12 @@ class CustomUNet(nn.Module):
     def __init__(self, in_channels=3, num_classes=29):
         super(CustomUNet, self).__init__()
         
-        def CBR(in_channels, out_channels, kernel_size=3, dilation=1, bias=True):
+        def CBR(in_channels, out_channels, kernel_size=3, dilation=1, padding=1, bias=True):
             return nn.Sequential(
                 nn.Conv2d(in_channels=in_channels, 
                           out_channels=out_channels, 
                           kernel_size=kernel_size, 
-                          padding=kernel_size // 2, 
+                          padding=padding, 
                           dilation=dilation, 
                           bias=bias),
                 nn.BatchNorm2d(out_channels),
@@ -25,8 +25,8 @@ class CustomUNet(nn.Module):
                                       stride=stride, 
                                       bias=bias)
         
-        self.enc1_1 = CBR(in_channels, 64, dilation=2)
-        self.enc1_2 = CBR(64, 64, dilation=2)
+        self.enc1_1 = CBR(in_channels, 64, dilation=2, padding=2)
+        self.enc1_2 = CBR(64, 64, dilation=2, padding=2)
         self.spa1 = SpartialAttention(out_channels=64, kernel_size=5)
         self.ca1 = ChannelAttention(in_channels=64, reduction=4)
         self.sum_casp1 = FusionBlock(in_channels=64)
@@ -34,8 +34,8 @@ class CustomUNet(nn.Module):
 
         self.pool1 = nn.MaxPool2d(2)
         
-        self.enc2_1 = CBR(64, 128, dilation=2)
-        self.enc2_2 = CBR(128, 128, dilation=2)
+        self.enc2_1 = CBR(64, 128, dilation=2, padding=2)
+        self.enc2_2 = CBR(128, 128, dilation=2, padding=2)
         self.spa2 = SpartialAttention(out_channels=128, kernel_size=5)
         self.ca2 = ChannelAttention(in_channels=128, reduction=8)
         self.sum_casp2 = FusionBlock(in_channels=128)
@@ -43,8 +43,8 @@ class CustomUNet(nn.Module):
 
         self.pool2 = nn.MaxPool2d(2)
         
-        self.enc3_1 = CBR(128, 256, dilation=2)
-        self.enc3_2 = CBR(256, 256, dilation=2)
+        self.enc3_1 = CBR(128, 256, dilation=2, padding=2)
+        self.enc3_2 = CBR(256, 256, dilation=2, padding=2)
         self.spa3 = SpartialAttention(out_channels=256, kernel_size=5)
         self.ca3 = ChannelAttention(in_channels=256, reduction=16)
         self.sum_casp3 = FusionBlock(in_channels=256)
@@ -52,8 +52,8 @@ class CustomUNet(nn.Module):
 
         self.pool3 = nn.MaxPool2d(2)
         
-        self.enc4_1 = CBR(256, 512, dilation=2)
-        self.enc4_2 = CBR(512, 512, dilation=2)
+        self.enc4_1 = CBR(256, 512, dilation=2, padding=2)
+        self.enc4_2 = CBR(512, 512, dilation=2, padding=2)
         self.spa4 = SpartialAttention(out_channels=512, kernel_size=5)
         self.ca4 = ChannelAttention(in_channels=512, reduction=32)
         self.sum_casp4 = FusionBlock(in_channels=512)
@@ -61,31 +61,25 @@ class CustomUNet(nn.Module):
 
         self.pool4 = nn.MaxPool2d(2)
         
-        self.bottleneck = nn.Sequential(
-            CBR(512, 1024),
-            CBR(1024, 512)
-        )
+        self.bottlenect5_1 = CBR(in_channels=512, out_channels=1024)
+        self.bottlenect5_2 = CBR(in_channels=1024, out_channels=512)
         
-        self.dec4 = nn.Sequential(
-            unpool(512, 512),
-            CBR(512, 512)
-        )
-        
-        self.dec3 = nn.Sequential(
-            unpool(512, 256),
-            CBR(256, 256)
-        )
-        
-        self.dec2 = nn.Sequential(
-            unpool(256, 128),
-            CBR(128, 128)
-        )
-        
-        self.dec1 = nn.Sequential(
-            unpool(128, 64),
-            CBR(64, 64)
-        )
-        
+        self.dec4_2 = unpool(512, 512)
+        self.decfusion4 = FusionBlock(512, 'cat')
+        self.dec4_1 = CBR(512, 512)
+
+        self.dec3_2 = unpool(512, 256)
+        self.decfusion3 = FusionBlock(256, 'cat')
+        self.dec3_1 = CBR(256, 256)
+
+        self.dec2_2 = unpool(256, 128)
+        self.decfusion2 = FusionBlock(128, 'cat')
+        self.dec2_1 = CBR(128, 128)
+
+        self.dec1_2 = unpool(128, 64)
+        self.decfusion1 = FusionBlock(64, 'cat')
+        self.dec1_1 = CBR(64, 64)
+
         self.out_conv = nn.Conv2d(64, num_classes, kernel_size=1)
         
     def forward(self, x):
@@ -125,19 +119,24 @@ class CustomUNet(nn.Module):
         enc4_out = sum_casp4_out + cat_casp4_out
         pool4_out = self.pool4(enc4_out)
         
-        bottleneck_out = self.bottleneck(pool4_out)
+        bottleneck5_1 = self.bottlenect5_1(pool4_out)
+        bottleneck5_2 = self.bottlenect5_2(bottleneck5_1)
         
-        dec4_out = self.dec4(bottleneck_out)
-        dec4_out = dec4_out + enc4_out
+        dec4_2 = self.dec4_2(bottleneck5_2)
+        decfusion4 = self.decfusion4(dec4_2, enc4_out)
+        dec4_1 = self.dec4_1(decfusion4)
         
-        dec3_out = self.dec3(dec4_out)
-        dec3_out = dec3_out + enc3_out
+        dec3_2 = self.dec3_2(dec4_1)
+        decfusion3 = self.decfusion3(dec3_2, enc3_out)
+        dec3_1 = self.dec3_1(decfusion3)
+
+        dec2_2 = self.dec2_2(dec3_1)
+        decfusion2 = self.decfusion2(dec2_2, enc2_out)
+        dec2_1 = self.dec2_1(decfusion2)
+
+        dec1_2 = self.dec1_2(dec2_1)
+        decfusion1 = self.decfusion1(dec1_2, enc1_out)
+        dec1_1 = self.dec1_1(decfusion1)
         
-        dec2_out = self.dec2(dec3_out)
-        dec2_out = dec2_out + enc2_out 
-        
-        dec1_out = self.dec1(dec2_out)
-        dec1_out = dec1_out + enc1_out
-        
-        out = self.out_conv(dec1_out)
+        out = self.out_conv(dec1_1)
         return out
