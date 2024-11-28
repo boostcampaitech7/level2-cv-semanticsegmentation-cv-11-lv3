@@ -6,9 +6,7 @@ from utils.util import get_IND2CLASS
 import numpy as np
 import gc
 
-def test(args, data_loader, thr=0.5):
-    model = torch.load(args.model)
-    model = model.cuda()
+def test(model, data_loader, thr=0.5):
     model.eval()
     rles = []
     filename_and_class = []
@@ -28,6 +26,33 @@ def test(args, data_loader, thr=0.5):
                     rles.append(rle)
                     filename_and_class.append(f"{get_IND2CLASS()[c]}_{image_name}")
     return rles, filename_and_class
+
+def test_tta(model, data_loader, tta_transforms, thr=0.5):
+    model.eval()
+    rles = []
+    filename_and_class = []
+    with torch.no_grad():
+        for step, (images, image_names) in tqdm(enumerate(data_loader), total=len(data_loader)):
+            images = images.cuda()
+            tta_outputs = []
+            for transformer in tta_transforms:
+                augmented_images = transformer.augment_image(images)
+                outputs = model(augmented_images)
+                deaugmented_outputs = transformer.deaugment_mask(outputs)
+                tta_outputs.append(deaugmented_outputs)
+            outputs = torch.stack(tta_outputs, dim=0)
+            outputs = torch.mean(outputs, dim=0)
+            outputs = F.interpolate(outputs, size=(2048, 2048), mode="bilinear")
+            outputs = torch.sigmoid(outputs)
+            outputs = (outputs > thr).detach().cpu().numpy()
+
+            for output, image_name in zip(outputs, image_names):
+                for c, segm in enumerate(output):
+                    rle = encode_mask_to_rle(segm)
+                    rles.append(rle)
+                    filename_and_class.append(f"{get_IND2CLASS()[c]}_{image_name}")
+    return rles, filename_and_class
+    
 
 def batch_soft_voting(data_loader, model_paths, thr=0.5):
     """

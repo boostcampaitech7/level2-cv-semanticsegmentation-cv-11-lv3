@@ -231,7 +231,7 @@ class Trainer:
                             kakao.send_message(self.kakao_uuid_list, message)
                             slack.send_slack_notification(message=message)
                             
-                        self.scheduler.step()
+                        self.scheduler.step(val_loss)
         except Exception as e:
             error_message = (
             f"서버 {self.server}번 {self.access_name}님의 학습 중 에러 발생\nError: {str(e)}"

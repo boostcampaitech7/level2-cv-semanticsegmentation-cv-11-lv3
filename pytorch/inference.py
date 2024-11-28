@@ -2,6 +2,8 @@ import os
 import argparse
 import albumentations as A
 import torch.nn.functional as F
+import torch
+from transform.transform import get_transform
 
 from trainer.test import test
 
@@ -17,13 +19,16 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, help="Path to the model to use")
     parser.add_argument("--image_root", type=str, default="/data/ephemeral/home")
-    parser.add_argument("--thr", type=float, default=0.5)
+    parser.add_argument("--thr", type=float, default=0.3)
     parser.add_argument("--resize", type=int, default=1024, help="Size to resize images (both width and height)")
     args = parser.parse_args()
 
+    model = torch.load(args.model)
+    
     test_pngs = find_file(os.path.join(args.image_root,'test/DCM'), ".png")
-
-    tf = A.Resize(height=args.resize, width=args.resize)
+    
+    tf_list = [A.Resize(height=args.resize, width=args.resize)]
+    tf = get_transform(tf_list)
 
     test_dataset = XRayInferenceDataset(test_pngs,
                                         args.image_root,
@@ -37,8 +42,7 @@ if __name__=="__main__":
         drop_last=False
     )
 
-    # Inference and save results
-    rles, filename_and_class = test(args, test_loader, thr=args.thr)
+    rles, filename_and_class = test(model, test_loader, thr=args.thr)
     save_dir = f"./inference_results/{start_time}"
     
     result_df = inference_to_csv(filename_and_class, rles, path=save_dir)

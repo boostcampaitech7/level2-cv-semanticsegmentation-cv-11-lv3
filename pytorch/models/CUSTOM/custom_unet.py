@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from .layers import ChannelAttention, SpartialAttention, FusionBlock
 
 class CustomUNet(nn.Module):
@@ -65,19 +66,23 @@ class CustomUNet(nn.Module):
         self.bottlenect5_2 = CBR(in_channels=1024, out_channels=512)
         
         self.dec4_2 = unpool(512, 512)
-        self.decfusion4 = FusionBlock(512, 'cat')
+        # self.decfusion4 = FusionBlock(512, 'cat')
+        self.decfusion4 = FusionBlock(512, 'sum')
         self.dec4_1 = CBR(512, 512)
 
         self.dec3_2 = unpool(512, 256)
-        self.decfusion3 = FusionBlock(256, 'cat')
+        # self.decfusion3 = FusionBlock(256, 'cat')
+        self.decfusion3 = FusionBlock(256, 'sum')
         self.dec3_1 = CBR(256, 256)
 
         self.dec2_2 = unpool(256, 128)
-        self.decfusion2 = FusionBlock(128, 'cat')
+        # self.decfusion2 = FusionBlock(128, 'cat')
+        self.decfusion2 = FusionBlock(128, 'sum')
         self.dec2_1 = CBR(128, 128)
 
         self.dec1_2 = unpool(128, 64)
-        self.decfusion1 = FusionBlock(64, 'cat')
+        # self.decfusion1 = FusionBlock(64, 'cat')
+        self.decfusion1 = FusionBlock(64, 'sum')
         self.dec1_1 = CBR(64, 64)
 
         self.out_conv = nn.Conv2d(64, num_classes, kernel_size=1)
@@ -121,21 +126,26 @@ class CustomUNet(nn.Module):
         
         bottleneck5_1 = self.bottlenect5_1(pool4_out)
         bottleneck5_2 = self.bottlenect5_2(bottleneck5_1)
+        bottleneck5_2 = F.dropout(bottleneck5_2, p=0.3, training=self.training)
         
         dec4_2 = self.dec4_2(bottleneck5_2)
         decfusion4 = self.decfusion4(dec4_2, enc4_out)
+        decfusion4 = F.dropout(decfusion4, p=0.3, training=self.training)
         dec4_1 = self.dec4_1(decfusion4)
         
         dec3_2 = self.dec3_2(dec4_1)
         decfusion3 = self.decfusion3(dec3_2, enc3_out)
+        decfusion3 = F.dropout(decfusion3, p=0.3, training=self.training)
         dec3_1 = self.dec3_1(decfusion3)
 
         dec2_2 = self.dec2_2(dec3_1)
         decfusion2 = self.decfusion2(dec2_2, enc2_out)
+        decfusion2 = F.dropout(decfusion2, p=0.3, training=self.training)
         dec2_1 = self.dec2_1(decfusion2)
 
         dec1_2 = self.dec1_2(dec2_1)
         decfusion1 = self.decfusion1(dec1_2, enc1_out)
+        decfusion1 = F.dropout(decfusion1, p=0.3, training=self.training)
         dec1_1 = self.dec1_1(decfusion1)
         
         out = self.out_conv(dec1_1)

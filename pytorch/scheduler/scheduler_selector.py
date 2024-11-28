@@ -1,11 +1,9 @@
 from torch.optim import lr_scheduler
 from .CustomCAWR.CustomCosineAnnealingWarmupRestarts import CustomCosineAnnealingWarmupRestarts
 
-# MultiStepLR
 def multi_step_lr(optimizer, **scheduler_parameter):
     return lr_scheduler.MultiStepLR(optimizer, **scheduler_parameter)
 
-# CosineAnnealingLR
 def cosine_annealing_lr(optimizer, **scheduler_parameter):
     return lr_scheduler.CosineAnnealingLR(optimizer, **scheduler_parameter)
 
@@ -15,6 +13,8 @@ def cosine_annealing_warm_restarts(optimizer, **scheduler_parameter):
 def custom_cosine_annealing_warmup_restarts(optimizer, **scheduler_parameter):
     return CustomCosineAnnealingWarmupRestarts(optimizer=optimizer, **scheduler_parameter)
 
+def reduce(optimizer, **scheduler_parameter):
+    return lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, **scheduler_parameter)
 class SchedulerSelector():
     """
     scheduler를 새롭게 추가하기 위한 방법
@@ -30,6 +30,7 @@ class SchedulerSelector():
             "CosineAnnealingLR" : cosine_annealing_lr,
             "CosineAnnealingWR" : cosine_annealing_warm_restarts,
             "CustomCAWR" : custom_cosine_annealing_warmup_restarts,
+            "Reduce" : reduce
         }
         self.optimizer = optimizer
 

@@ -7,13 +7,13 @@ fold_list: [4,]
 
 # 앱 설정 정의
 kakao_uuid_path: /data/ephemeral/home/keys/uuid.json
-task: CustomUNet(DICE0.8,IoU0.3,FTve1.8) No aug 1024
+task: sumCUNet(D0.9,I0.9,B0.1,F0.4) 1024
 access_name: 이상진
 server: 4
 
 # mlflow
 exp_name: lee
-run_name: CustomUNet(DICE0.8,IoU0.3,FTve1.8)
+run_name: SUMCUNet
 
 # 모델명 및 사전 학습 여부
 model:
@@ -32,7 +32,7 @@ val_batch_size: 2
 test_batch_size: 4
 
 
-image_size: &image_size 1024
+image_size: &image_size 512
 
 # transform 관련
 transform:
@@ -41,10 +41,10 @@ transform:
     height: *image_size
 
 # 학습 관련 하이퍼파라미터
-lr: 5e-4
-weight_decay: 1e-6
+lr: 1e-3
+weight_decay: 1e-4
 
-max_epoch: &max_epoch 150
+max_epoch: &max_epoch 22
 
 
 early_stopping:
@@ -54,22 +54,22 @@ early_stopping:
 # loss 관련 설정
 loss: 
   type: CombineLoss    #CombineLoss & None
-  loss_list: ["Dice", "IoU", "FocalTve"]
-  weights: [0.8, 0.4, 1.8]
+  loss_list: ["Dice", "IoU", "BCEL", "FocalTve"]
+  weights: [0.9, 0.9, 0.1, 0.3]
 # loss에 필요한 parameter -> dict 형태로 작성
 loss_parameter: {}
 
 # scheduler 관련 설정
-scheduler_name: CustomCAWR
+scheduler_name: Reduce
 
 # scheduler 필요한 parameter -> dict 형태로 작성
 scheduler_parameter:
-  first_cycle_steps: 20
-  cycle_mult: 2
-  max_lr: 5e-4
+  mode: 'min'
+  factor: 0.5
+  patience: 5
+  threshold: 0.01
+  cooldown: 2
   min_lr: 1e-6
-  warmup_steps: 10
-  gamma: 0.8
 
 # random seed값
 seed: 21

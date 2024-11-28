@@ -35,7 +35,7 @@ class FocalTveskyLoss(nn.Module):
     def __init__(self, weight=None, size_average=True):
         super(FocalTveskyLoss, self).__init__()
 
-    def forward(self, preds, targets, smooth=1, alpha=0.4, beta=0.6, gamma=1):
+    def forward(self, preds, targets, smooth=1, alpha=0.3, beta=0.7, gamma=1.5):
         preds = F.sigmoid(preds)
         preds = preds.view(-1)
         targets = targets.view(-1)

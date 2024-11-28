@@ -12,6 +12,7 @@ import gc
 from utils.mlflow import MLflowManager
 import traceback
 import matplotlib.pyplot as plt
+import cv2
 
 from utils.util import set_seed, get_classes, extract_uuid2list
 from transform.transform import get_transform
@@ -48,7 +49,7 @@ def main(cfg):
         mlflow_manager = MLflowManager(experiment_name=cfg.exp_name)
         
         uuid_list = extract_uuid2list(cfg.kakao_uuid_path)
-        kakao.send_message(uuid_list, f"{cfg.access_name}님이 서버 {cfg.server}번\n{cfg.task} epoch {cfg.max_epoch}\n학습을 시작하였습니다.")
+        # kakao.send_message(uuid_list, f"{cfg.access_name}님이 서버 {cfg.server}번\n{cfg.task} epoch {cfg.max_epoch}\n학습을 시작하였습니다.")
         sheet.update_server_status(cfg.server, cfg.access_name, True, cfg.task)
         slack.send_slack_notification(f"{cfg.access_name}님이 서버 {cfg.server}번\n{cfg.task} epoch {cfg.max_epoch}\n학습을 시작하였습니다.")
         
@@ -60,7 +61,7 @@ def main(cfg):
             model = model_selector.get_model(cfg.model)
             model = model.cuda()
             
-            transform_list = [A.Resize(cfg.transform.Resize.width, cfg.transform.Resize.height)]
+            transform_list = [A.Resize(cfg.transform.Resize.height, cfg.transform.Resize.width)]
             transforms = get_transform(transform_list)
 
             train_dataset = XRayTrainDataset(
@@ -91,14 +92,13 @@ def main(cfg):
                 dataset=val_dataset, batch_size=cfg.val_batch_size, shuffle=False, num_workers=0, drop_last=False
             )
             
-            # print("증강된 데이터 시각화:")
-            # visualize_and_save_images(train_loader, classes, save_dir="./overlay_images", max_visualizations=3)
+            print("증강된 데이터 시각화:")
+            visualize_and_save_images(train_loader, classes, save_dir="./overlay_images", max_visualizations=3)
 
             optimizer = optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
             scheduler_selector = SchedulerSelector(optimizer)
             scheduler = scheduler_selector.get_scheduler(cfg.scheduler_name, **cfg.scheduler_parameter)
 
-            # criterion = combine_loss
             loss_selector = LossSelector()
             criterion = loss_selector.get_loss(cfg.loss, **cfg.loss_parameter)
 
