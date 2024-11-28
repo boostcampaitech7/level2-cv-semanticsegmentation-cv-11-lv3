@@ -204,9 +204,8 @@ python3 inference.py --model {~.pt_file_path}
     <p><em>ML Flow</em></p>
 </div>
 
-- MLfLow를 활용해 실험 기록을 추적하였습니다.
-- Claudflare의 퀵 터널링을 통해서 local host에 올려진 MLflow를 웹으로 공유하도록 하였습니다.
-
+- Cloudflare Quick Tunnel을 사용해 MLflow를 웹에서 접근 가능하게 설정하여서 실험 기록을 관리하였습니다.
+  
 #### Notion
 - 프로젝트 관리 및 작업 목록, 회의 기록을 공유합니다.
 #### Zoom
