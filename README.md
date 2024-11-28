@@ -16,7 +16,7 @@ Bone Segmentation은 인공지능 분야에서 중요한 응용 분야 중 하�
 ## 📅 프로젝트 일정
 프로젝트 전체 일정
 
-- 2024.10.28(월) ~ 2024.11.7(목)
+- 2024.11.11(월) ~ 2024.11.28(목)
 
 <div align='center'>
     <img src='.\img\gantt.png', alt='간트 차트'>
@@ -64,11 +64,11 @@ Bone Segmentation은 인공지능 분야에서 중요한 응용 분야 중 하�
 
 ## 🥈 프로젝트 결과
 ### Public
-- **4** / 24
-- Dice Coeff : **0.9200**
+-  / 24
+- Dice : 
 ### Private
-- **5** / 24
-- Dice Coeff : **0.9073**
+-  / 24
+- Dice : 
 
 <br />
 
@@ -105,7 +105,7 @@ dataset
 - 분류 클래스 : 29개의 클래스
 - 전체 데이터 중 학습데이터 800장, 평가데이터 288장으로 사용
 - 제출 형식 : Run-Length Encoding(RLE)형식으로 변환하여 CSV 파일로 제출
-
+- 
 <br />
 
 ## 🥉 프로젝트 구조
@@ -162,16 +162,8 @@ project/pytorch
 - `slack.py`: 학습현황을 슬랙 메시지로 전송하는 기능을 제공합니다.
 - `spreadsheet.py`: 서버 학습 현황 및 학습 데이터를 Google Sheet에 업데이트, 추가하는 기능을 제공합니다.
   
-### 2) tools
-- `cloba2datu.ipynb`: cord 데이터셋을 datumaro 형식으로 변환합니다.
-- `datu2ufo.ipynb`: datumaro 형식의 데이터셋을 UFO 형식으로 변환합니다.
-- `ufo2datu.ipynb`: UFO 형식의 데이터셋을 datumaro 형식으로 변환합니다.
-- `easyocr_pseudo.ipynb`: Easyocr 라이브러리를 활용해서 pseudo-labeling을 진행합니다.
-- `img_hash.ipynb`: 이미지 hash값을 이용해 중복 이미지를 제거하고 200장의 이미지를 추출합니다.
-- `inference_visualize.ipynb`: inference한 결과를 test이미지에 시각화합니다.
-- `server-status.py`: 서버의 CPU, 메모리, GPU 상태를 조회합니다.
-- `data_duplication_check.py`: hash값으로 이미지가 겹치는지 확인하고 제거합니다.
-- `streamlit_viz.py`: dataset의 annotation을 streamlit으로 시각화합니다.
+### 2) 
+
 
 <br />
 
@@ -184,83 +176,22 @@ project/pytorch
 ```bash
 pip install -r requirements.txt
 ```
-<details>
-<summary>requirements 접기/펼치기</summary>
+- opencv-python-headless==4.10.0.84
+- pandas==2.2.3
+- scikit-learn==1.5.2
+- albumentations==1.4.18
+- matplotlib==3.9.2
 
-- lanms==1.0.2
-- opencv-python==4.10.0.84
-- shapely==2.0.5
-- albumentations==1.4.12
-- torch==2.1.0
-- tqdm==4.66.5
-- albucore==0.0.13
-- annotated-types==0.7.0
-- contourpy==1.1.1
-- cycler==0.12.1
-- eval_type_backport==0.2.0
-- filelock==3.15.4
-- fonttools==4.53.1
-- fsspec==2024.6.1
-- imageio==2.35.0
-- importlib_resources==6.4.2
-- Jinja2==3.1.4
-- kiwisolver==1.4.5
-- lazy_loader==0.4
-- MarkupSafe==2.1.5
-- matplotlib==3.7.5
-- mpmath==1.3.0
-- networkx==3.1
-- numpy==1.24.4
-- nvidia-cublas-cu12==12.1.3.1
-- nvidia-cuda-cupti-cu12==12.1.105
-- nvidia-cuda-nvrtc-cu12==12.1.105
-- nvidia-cuda-runtime-cu12==12.1.105
-- nvidia-cudnn-cu12==8.9.2.26
-- nvidia-cufft-cu12==11.0.2.54
-- nvidia-curand-cu12==10.3.2.106
-- nvidia-cusolver-cu12==11.4.5.107
-- nvidia-cusparse-cu12==12.1.0.106
-- nvidia-nccl-cu12==2.18.1
-- nvidia-nvjitlink-cu12==12.6.20
-- nvidia-nvtx-cu12==12.1.105
-- packaging==24.1
-- pillow==10.4.0
-- pydantic==2.8.2
-- pydantic_core==2.20.1
-- pyparsing==3.1.2
-- python-dateutil==2.9.0.post0
-- PyWavelets==1.4.1
-- PyYAML==6.0.2
-- scikit-image==0.21.0
-- scipy==1.10.1
-- six==1.16.0
-- sympy==1.13.2
-- tifffile==2023.7.10
-- tomli==2.0.1
-- triton==2.1.0
-- typing_extensions==4.12.2
-</details>
 <br />
 
 ## 🚀 빠른 시작
 ### Train
 ```python
-python custom_train.py 
+~/pytorch python train.py
 ```
-### Train Parser
-기본 설정
-- `--data_dir` : Dataset directory
-- `--model_dir` : Model directory (기본값 : EAST Model)
-- `--device` : `cuda` or `cpu` ( 기본값 : cuda )
-
-학습 설정
-- `--num_workers` : 학습할 프로세스 수 (기본값 : 8)
-- `--image_size` : 학습할 이미지 크기 (기본값 : 2048)
-- `--input_size` : 학습할 입력 이미지 크 (기본값 : 1024)
-- `--batch_size` : 배치 크기 결정 ( 기본값 : 8)
-- `--learning_rate` : 학습률 설정 ( 기본값 : 0.001)
-- `--max_epochs` : 학습할 에폭 수 (기본값 : 150)
-- `--save_interval` : 가중치를 저장할 epoch 간격 (기본값 : 5)
+### Train Config
+#### ~/pytorch/configs/base_train.yaml
 
 ## 🏅 Wrap-Up Report   
-### [ Wrap-Up Report 👑]
+### 
+
