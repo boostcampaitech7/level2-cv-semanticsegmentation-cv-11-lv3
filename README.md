@@ -22,83 +22,14 @@ Bone Segmentation은 인공지능 분야에서 중요한 응용 분야 중 하�
     <p><em>간트 차트</em></p>
 </div>
 
-## 🤝 협업 Tools
-### 학습 알림
-#### Slack & KakaoTalk
-- **학습 시작, 완료, 에러 발생** 시 Slack과 카카오톡을 통해 실시간으로 알림을 전송하여 팀원들이 즉시 확인할 수 있도록 하였습니다.
-<div align='center'>
-    <img src='.\img\slack.png', alt='slack 학습 알림'>
-    <p><em>Slack 알림</em></p>
-    <img src='.\img\kakaotalk.png', alt='카카오톡 학습 알림'>
-    <p><em>카카오톡 알림</em></p>
-</div>
-
-#### Google Sheet
-- 서버 사용 현황 확인 및 학습 완료 시 학습결과를 자동으로 작성합니다.
-<div align='center'>
-    <img src='.\img\spreadsheet_server.png', alt='서버 사용 현황'>
-    <p><em>Google Sheet 서버 사용 현황</em></p>
-    <img src='.\img\spreadsheet_result.png', alt='학습 결과 저장'>
-    <p><em>학습 결과 자동 저장</em></p>
-</div>
-
-### 프로젝트 관리
-#### ML Flow
-<div align='center'>
-    <img src='.\img\mlflow.png', alt='서버 사용 현황'>
-    <p><em>ML Flow</em></p>
-</div>
-
-- ML FLow를 활용해 실험 기록을 추적하였습니다.
-
-#### Notion
-- 프로젝트 관리 및 작업 목록, 회의 기록을 공유합니다.
-#### Zoom
-- 주기적인 회의와 실시간 피드백 제공을 위해 줌을 사용해 소통하였습니다.
-#### GitHub
-- 코드 버전 관리 및 협업을 위해 GitHub를 사용하였습니다.
-
-<br />
-
-
-## 🥈 프로젝트 결과
-### Public
--  / 24
-- Dice : 
-### Private
--  / 24
-- Dice : 
-
-<br />
-
-## 📊 데이터셋 구조
-```
-📂 dataset
-├──📂 test
-│   └──📂 DCM
-│       ├──📂 ID040
-│       │   └──📄 *.png
-│       └──📂 ID041
-│           └──📄 *.png
-├──📂 train
-│   ├──📂 DCM
-│   │   ├──📂 ID001
-│   │   │   └──📄 *.png
-│   │   └──📂 ID002
-│   │       └──📄 *.png
-│   └──📂 outputs_json
-│       ├──📂 ID001
-│       │   └──📄 *.json
-│       └──📂 ID002
-│           └──📄 *.json
-```
-
+## 📊 데이터셋
+이 코드는 `부스트캠프 AI Tech`에서 제공하는 데이터셋으로 다음과 같은 구성을 따릅니다. 
 <div align='center'>
     <img src='.\img\classes.png', alt='클래스'>
     <p><em>Hand Bone Classes</em></p>
 </div>
 
-이 코드는 `부스트캠프 AI Tech`에서 제공하는 데이터셋으로 다음과 같은 구성을 따릅니다. 
+
 - 전체 이미지 개수 : 1088장
 - 분류 클래스 : 29개의 클래스
 - 전체 데이터 중 학습데이터 800장, 평가데이터 288장으로 사용
@@ -245,6 +176,56 @@ python3 inference.py --model {~.pt_file_path}
 - `--image_root` : 테스트 이미지가 저장된 디렉토리
 - `--thr` : 분류 임계값
 - `--resize` : 입력 이미지를 리사이즈할 크기
+
+## 🤝 협업 Tools
+### 학습 알림
+#### Slack & KakaoTalk
+- **학습 시작, 완료, 에러 발생** 시 Slack과 카카오톡을 통해 실시간으로 알림을 전송하여 팀원들이 즉시 확인할 수 있도록 하였습니다.
+<div align='center'>
+    <img src='.\img\slack.png', alt='slack 학습 알림'>
+    <p><em>Slack 알림</em></p>
+    <img src='.\img\kakaotalk.png', alt='카카오톡 학습 알림'>
+    <p><em>카카오톡 알림</em></p>
+</div>
+
+#### Google Sheet
+- 서버 사용 현황 확인 및 학습 완료 시 학습결과를 자동으로 작성합니다.
+<div align='center'>
+    <img src='.\img\spreadsheet_server.png', alt='서버 사용 현황'>
+    <p><em>Google Sheet 서버 사용 현황</em></p>
+    <img src='.\img\spreadsheet_result.png', alt='학습 결과 저장'>
+    <p><em>학습 결과 자동 저장</em></p>
+</div>
+
+### 프로젝트 관리
+#### ML Flow
+<div align='center'>
+    <img src='.\img\mlflow.png', alt='서버 사용 현황'>
+    <p><em>ML Flow</em></p>
+</div>
+
+- ML FLow를 활용해 실험 기록을 추적하였습니다.
+
+#### Notion
+- 프로젝트 관리 및 작업 목록, 회의 기록을 공유합니다.
+#### Zoom
+- 주기적인 회의와 실시간 피드백 제공을 위해 줌을 사용해 소통하였습니다.
+#### GitHub
+- 코드 버전 관리 및 협업을 위해 GitHub를 사용하였습니다.
+
+<br />
+
+
+## 🎯 프로젝트 결과
+### Public
+-  / 24
+- Dice Coeff : 
+### Private
+-  / 24
+- Dice Coeff : 
+
+<br />
+
 ## 🏅 Wrap-Up Report   
 ### 
 
