@@ -198,13 +198,14 @@ python3 inference.py --model {~.pt_file_path}
 </div>
 
 ### 프로젝트 관리
-#### ML Flow
+#### MLflow & Claudflare
 <div align='center'>
     <img src='.\img\mlflow.png', alt='서버 사용 현황'>
     <p><em>ML Flow</em></p>
 </div>
 
-- ML FLow를 활용해 실험 기록을 추적하였습니다.
+- MLfLow를 활용해 실험 기록을 추적하였습니다.
+- Claudflared의 퀵 터널링을 통해서 local host에 올려진 MLflow를 웹으로 공유하도록 하였습니다.
 
 #### Notion
 - 프로젝트 관리 및 작업 목록, 회의 기록을 공유합니다.
