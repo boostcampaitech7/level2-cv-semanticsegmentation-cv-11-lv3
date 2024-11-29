@@ -1,19 +1,84 @@
 from torch.optim import lr_scheduler
 from .CustomCAWR.CustomCosineAnnealingWarmupRestarts import CustomCosineAnnealingWarmupRestarts
+from torch.optim import lr_scheduler
+from .CustomCAWR.CustomCosineAnnealingWarmupRestarts import CustomCosineAnnealingWarmupRestarts
 
 def multi_step_lr(optimizer, **scheduler_parameter):
+    '''
+    MultiStepLR 스케줄러 생성
+    
+    Args:
+        optimizer (torch.optim.Optimizer): 옵티마이저
+        **scheduler_parameter: 스케줄러 파라미터
+    
+    Returns:
+        torch.optim.lr_scheduler.MultiStepLR: 생성된 스케줄러
+    '''
     return lr_scheduler.MultiStepLR(optimizer, **scheduler_parameter)
 
 def cosine_annealing_lr(optimizer, **scheduler_parameter):
+    '''
+    CosineAnnealingLR 스케줄러 생성
+    
+    Args:
+        optimizer (torch.optim.Optimizer): 옵티마이저
+        **scheduler_parameter: 스케줄러 파라미터
+    
+    Returns:
+        torch.optim.lr_scheduler.CosineAnnealingLR: 생성된 스케줄러
+    '''
     return lr_scheduler.CosineAnnealingLR(optimizer, **scheduler_parameter)
 
 def cosine_annealing_warm_restarts(optimizer, **scheduler_parameter):
+    '''
+    CosineAnnealingWarmRestarts 스케줄러 생성
+    
+    Args:
+        optimizer (torch.optim.Optimizer): 옵티마이저
+        **scheduler_parameter: 스케줄러 파라미터
+    
+    Returns:
+        torch.optim.lr_scheduler.CosineAnnealingWarmRestarts: 생성된 스케줄러
+    '''
     return lr_scheduler.CosineAnnealingWarmRestarts(optimizer, **scheduler_parameter)
 
 def custom_cosine_annealing_warmup_restarts(optimizer, **scheduler_parameter):
+    '''
+    CustomCosineAnnealingWarmupRestarts 스케줄러 생성
+    
+    Args:
+        optimizer (torch.optim.Optimizer): 옵티마이저
+        **scheduler_parameter: 스케줄러 파라미터
+    
+    Returns:
+        CustomCosineAnnealingWarmupRestarts: 생성된 스케줄러
+    '''
     return CustomCosineAnnealingWarmupRestarts(optimizer=optimizer, **scheduler_parameter)
 
 def reduce(optimizer, **scheduler_parameter):
+    '''
+    ReduceLROnPlateau 스케줄러 생성
+    
+    Args:
+        optimizer (torch.optim.Optimizer): 옵티마이저
+        **scheduler_parameter: 스케줄러 파라미터
+    
+    Returns:
+        torch.optim.lr_scheduler.ReduceLROnPlateau: 생성된 스케줄러
+    '''
+    return lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, **scheduler_parameter)
+
+def reduce(optimizer, **scheduler_parameter):
+    '''
+    ReduceLROnPlateau 스케줄러 생성
+    
+    Args:
+        optimizer (torch.optim.Optimizer): 옵티마이저
+        **scheduler_parameter: 스케줄러 파라미터
+    
+    Returns:
+        torch.optim.lr_scheduler.ReduceLROnPlateau: 생성된 스케줄러
+    '''
     return lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, **scheduler_parameter)
 class SchedulerSelector():
     """
@@ -35,4 +100,14 @@ class SchedulerSelector():
         self.optimizer = optimizer
 
     def get_scheduler(self, scheduler_name, **scheduler_parameter):
+        '''
+        스케줄러 생성
+        
+        Args:
+            scheduler_name (str): 스케줄러 이름
+            **scheduler_parameter: 스케줄러 파라미터
+        
+        Returns:
+            스케줄러 객체
+        '''
         return self.scheduler_classes.get(scheduler_name, None)(self.optimizer, **scheduler_parameter)
