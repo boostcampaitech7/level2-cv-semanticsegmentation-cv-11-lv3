@@ -218,11 +218,11 @@ python3 inference.py --model {~.pt_file_path}
 
 ## 🎯 프로젝트 결과
 ### Public
--  / 24
-- Dice Coeff : 
+- **20** / 24
+- Dice Coeff : 0.9718
 ### Private
--  / 24
-- Dice Coeff : 
+- **21** / 24
+- Dice Coeff : 0.9729
 
 <br />
 
