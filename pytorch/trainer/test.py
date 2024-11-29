@@ -7,6 +7,18 @@ import numpy as np
 import gc
 
 def test(model, data_loader, thr=0.5):
+    """
+    모델을 사용하여 테스트 데이터셋에서 예측을 수행하고 RLE 형식으로 결과 반환.
+
+    Args:
+        model (torch.nn.Module): 학습된 PyTorch 모델.
+        data_loader (DataLoader): 테스트 데이터 로더.
+        thr (float): 임계값. 이 값을 기준으로 예측을 이진화 (0 또는 1로 변환).
+
+    Returns:
+        rles (list of str): 각 예측 마스크를 RLE로 인코딩한 리스트.
+        filename_and_class (list of str): 파일 이름과 클래스 정보를 담은 리스트.
+    """
     model.eval()
     rles = []
     filename_and_class = []
@@ -28,6 +40,19 @@ def test(model, data_loader, thr=0.5):
     return rles, filename_and_class
 
 def test_tta(model, data_loader, tta_transforms, thr=0.5):
+    """
+    TTA(Test-Time Augmentation)를 적용하여 테스트 데이터셋에서 예측 수행.
+
+    Args:
+        model (torch.nn.Module): 학습된 PyTorch 모델.
+        data_loader (DataLoader): 테스트 데이터 로더.
+        tta_transforms (list of TTA objects): TTA 변환 객체들의 리스트.
+        thr (float): 임계값. 이 값을 기준으로 예측을 이진화.
+
+    Returns:
+        rles (list of str): 각 예측 마스크를 RLE로 인코딩한 리스트.
+        filename_and_class (list of str): 파일 이름과 클래스 정보를 담은 리스트.
+    """
     model.eval()
     rles = []
     filename_and_class = []
@@ -59,14 +84,13 @@ def batch_soft_voting(data_loader, model_paths, thr=0.5):
     배치 단위로 소프트 보팅 수행 후 RLE로 변환 (결과를 메모리에 유지).
     
     Args:
-        args: Argument 객체.
-        data_loader: DataLoader 객체.
-        model_paths: 모델 파일 경로 리스트.
-        thr: 임계값 (0~1).
-    
+        data_loader (DataLoader): 테스트 데이터 로더.
+        model_paths (list of str): 모델 파일 경로 리스트.
+        thr (float): 임계값. 이 값을 기준으로 예측을 이진화.
+
     Returns:
-        rles: RLE 인코딩된 결과 리스트.
-        filename_and_class: 파일 이름과 클래스 리스트.
+        rles (list of str): 소프트 보팅된 예측 마스크를 RLE로 인코딩한 리스트.
+        filename_and_class (list of str): 파일 이름과 클래스 정보를 담은 리스트.
     """
     # 모델 로드
     models = [torch.load(path).cuda().eval() for path in model_paths]

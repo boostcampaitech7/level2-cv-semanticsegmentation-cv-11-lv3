@@ -28,6 +28,15 @@ import services.kakao as kakao
 import services.slack as slack
 
 def get_folds(cfg):
+    '''
+    지정된 폴드들의 train/val로 분리시킨 이미지 정보 csv파일을 읽어서 반환
+
+    Args:
+        cfg (OmegaConf.DictConfig): 설정 정보를 담은 객체 (폴드 리스트 및 경로 포함)
+
+    Returns:
+        folds (list): 각 폴드 데이터프레임의 리스트
+    '''
     folds = []
 
     for num in cfg.fold_list:
@@ -38,6 +47,13 @@ def get_folds(cfg):
     return folds
     
 def main(cfg):
+    '''
+    메인 학습 루프. 지정된 설정에 따라 데이터 준비, 모델 생성, 학습 및 결과 로깅을 수행.
+
+    Args:
+        cfg (OmegaConf.DictConfig): 설정 정보를 담은 객체
+    '''
+
     try:
         set_seed(cfg.seed)
         classes = get_classes()

@@ -8,24 +8,26 @@ from sklearn.model_selection import GroupKFold
 from utils.util import read_annotations
 
 class XRayTrainDataset(Dataset):
-    '''
-    X-ray 데이터셋을 위한 Dataset 클래스
-    
+    """
+    X-ray 데이터셋을 위한 Dataset 클래스.
+
     Args:
-        root_dir (str): 데이터셋의 루트 경로
-        pngs (list): PNG 이미지 파일의 리스트
-        jsons (list): JSON 라벨 파일의 리스트
-        is_train (bool): train/validation 여부
-        transform (albumentations.Compose): 이미지와 마스크에 적용할 증강
-        cache_data (bool): 데이터를 메모리에 캐싱할지 여부
-        n (int): GroupKFold의 n_split값
-        classes (list): 사용할 클래스의 리스트
-    
+        image_root (str): 이미지 데이터가 저장된 디렉토리 경로.
+        label_root (str): JSON 라벨 데이터가 저장된 디렉토리 경로.
+        fold_df (DataFrame): train/val split 정보가 포함된 데이터프레임.
+        is_train (bool): train/validation 데이터 여부.
+        transforms (callable, optional): Albumentations와 같은 데이터 증강 함수 (기본값: None).
+        cache_data (bool): 데이터를 메모리에 캐싱할지 여부 (기본값: False).
+        classes (list): 사용할 클래스 이름 리스트.
+
     Attributes:
-        class2ind (dict): 클래스 이름을 인덱스로 매핑하는 딕셔너리
-        ind2class (dict): 인덱스를 클래스 이름으로 매핑하는 딕셔너리
-        data_cache (dict): 캐싱할 데이터를 저장하는 딕셔너리
-    '''
+        filenames (list): 이미지 파일 이름 리스트.
+        labelnames (list): 라벨 파일 이름 리스트.
+        class2ind (dict): 클래스 이름을 인덱스로 매핑하는 딕셔너리.
+        image_dir (str): 이미지 데이터 디렉토리 경로.
+        json_dir (str): JSON 라벨 데이터 디렉토리 경로.
+        data_cache (dict or None): 메모리에 캐싱된 데이터를 저장하는 딕셔너리. `cache_data`가 True일 때만 사용.
+    """
     def __init__(self, image_root,label_root, fold_df, is_train=True, 
                  transforms=None, cache_data=False ,classes=None):
         
@@ -48,22 +50,25 @@ class XRayTrainDataset(Dataset):
         self.data_cache = {} if cache_data else None
         
     def __len__(self):
-        '''
-        데이터셋의 길이 반환
-        '''
+        """
+        데이터셋의 길이를 반환.
+
+        Returns:
+            int: 데이터셋에 포함된 샘플 수.
+        """
         return len(self.filenames)
     
         
     def load_data(self, img_path, label_path) -> tuple:
         """
-        이미지와 라벨 데이터를 불러옵니다
+        이미지와 라벨 데이터를 불러옴.
 
         Args:
-            img_path (str): 이미지 파일 경로
-            label_path (str): JSON 라벨 파일 경로
+            img_path (str): 이미지 파일 경로.
+            label_path (str): JSON 라벨 파일 경로.
 
         Returns:
-            tuple: (이미지 배열, 'annotations' 데이터)
+            tuple: (이미지 배열, JSON 'annotations' 데이터).
         """
         try:
             img = cv2.imread(img_path, cv2.IMREAD_COLOR)
@@ -81,14 +86,14 @@ class XRayTrainDataset(Dataset):
     
     def create_label_mask(self, img_shape, ann) -> np.ndarray:
         """
-        주어진 이미지 크기와 'annotations' 데이터를 기반으로 라벨 마스크를 생성
+        이미지 크기와 'annotations' 데이터를 기반으로 라벨 마스크 생성.
 
         Args:
-            img_shape (tuple): 이미지의 크기
-            ann (list): 'annotations' 데이터 리스트
+            img_shape (tuple): 이미지의 크기 (높이, 너비, 채널 수).
+            ann (list): JSON의 'annotations' 데이터 리스트.
 
         Returns:
-            np.ndarray: 생성된 라벨 마스크
+            np.ndarray: 생성된 라벨 마스크. 크기는 (높이, 너비, 클래스 수).
         """
         if self.classes is None:
             print("클래스 정보 없음")
@@ -115,13 +120,15 @@ class XRayTrainDataset(Dataset):
     
     def __getitem__(self, idx) -> tuple:
         """
-        주어진 인덱스의 이미지와 라벨 데이터를 반환
+        주어진 인덱스의 이미지와 라벨 데이터를 반환.
 
         Args:
-            idx (int): 인덱스
+            idx (int): 인덱스.
 
         Returns:
-            tuple: (이미지 텐서, 라벨 텐서)
+            tuple: (이미지 텐서, 라벨 텐서).
+                - 이미지 텐서: 크기 (채널, 높이, 너비).
+                - 라벨 텐서: 크기 (클래스 수, 높이, 너비).
         """
         image_name = self.filenames[idx]
         label_name = self.labelnames[idx]

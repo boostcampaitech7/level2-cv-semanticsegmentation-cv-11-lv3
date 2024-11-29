@@ -18,14 +18,27 @@ from .Earlystopping import EarlyStopper
 
 
 def dice_coef(y_true, y_pred):
-        y_true_f = y_true.flatten(2)
-        y_pred_f = y_pred.flatten(2)
-        intersection = torch.sum(y_true_f * y_pred_f, -1)
+    """
+    Dice 계수를 계산.
 
-        eps = 0.0001
-        return (2. * intersection + eps) / (torch.sum(y_true_f, -1) + torch.sum(y_pred_f, -1) + eps)
+    Args:
+        y_true (torch.Tensor): 실제 마스크 (배치 크기 x 클래스 수 x 높이 x 너비).
+        y_pred (torch.Tensor): 예측 마스크 (배치 크기 x 클래스 수 x 높이 x 너비).
+
+    Returns:
+        torch.Tensor: Dice 계수 값. 클래스별 평균 Dice 계수를 반환.
+    """
+    y_true_f = y_true.flatten(2)
+    y_pred_f = y_pred.flatten(2)
+    intersection = torch.sum(y_true_f * y_pred_f, -1)
+
+    eps = 0.0001
+    return (2. * intersection + eps) / (torch.sum(y_true_f, -1) + torch.sum(y_pred_f, -1) + eps)
 
 class Trainer:
+    """
+    모델 학습 및 검증, Early Stopping, 모델 저장을 포함한 학습 관리를 수행하는 클래스.
+    """
     def __init__(self, 
                  model: nn.Module,
                  max_epoch: int,
@@ -44,6 +57,28 @@ class Trainer:
                  access_name,
                  server,
                  earlystop):
+        """
+        Trainer 초기화 함수.
+
+        Args:
+            model (nn.Module): 학습에 사용할 모델.
+            max_epoch (int): 최대 학습 에폭 수.
+            train_loader (DataLoader): 학습 데이터 로더.
+            val_interval (int): 검증 주기 (에폭 단위).
+            val_loader (DataLoader): 검증 데이터 로더.
+            criterion (nn.modules.loss._Loss): 손실 함수.
+            optimizer (optim.Optimizer): 옵티마이저.
+            save_dir (str): 모델 저장 디렉토리.
+            scheduler (optim.lr_scheduler): 학습률 스케줄러.
+            cur_fold (str): 현재 폴드 이름.
+            mlflow_manager: MLflow 관리 객체.
+            run_name (str): MLflow 실행 이름.
+            num_class (int): 클래스 수.
+            kakao_uuid_list (list): 카카오 알림 대상 UUID 리스트.
+            access_name (str): 학습 실행자 이름.
+            server (str): 서버 번호.
+            earlystop (EarlyStopper): Early Stopping 객체.
+        """
         
         self.model = model
         self.train_loader = train_loader
@@ -66,6 +101,17 @@ class Trainer:
         
 
     def save_model(self, epoch, dice_score, before_path):
+        """
+        현재 학습 중 가장 성능이 좋은 모델 저장.
+
+        Args:
+            epoch (int): 현재 에폭 번호.
+            dice_score (float): 현재 모델의 Dice 계수.
+            before_path (str): 이전에 저장된 모델 경로. 있으면 삭제.
+
+        Returns:
+            str: 저장된 모델 경로.
+        """
         
         if not osp.isdir(self.save_dir):
             os.makedirs(self.save_dir, exist_ok=True)
@@ -79,6 +125,15 @@ class Trainer:
 
 
     def train_epoch(self, epoch):
+        """
+        한 에폭 동안 학습 수행.
+
+        Args:
+            epoch (int): 현재 에폭 번호.
+
+        Returns:
+            float: 에폭 당 평균 손실 값.
+        """
         train_start = time.time()
         self.model.train()
         total_loss = 0.0
@@ -117,6 +172,15 @@ class Trainer:
     
 
     def validation(self, epoch):
+        """
+        현재 모델을 검증 데이터셋에서 평가.
+
+        Args:
+            epoch (int): 현재 에폭 번호.
+
+        Returns:
+            tuple: (평균 Dice 계수, 클래스별 Dice 계수 딕셔너리, 평균 검증 손실 값)
+        """
         torch.cuda.empty_cache()
         val_start = time.time()
         self.model.eval()
