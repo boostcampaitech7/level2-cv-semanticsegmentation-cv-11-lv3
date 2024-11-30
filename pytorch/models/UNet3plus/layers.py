@@ -3,6 +3,12 @@ import torch.nn as nn
 from torch.nn import init
 
 def weights_init_kaiming(m):
+    """
+    Kaiming He 초기화를 적용
+
+    Args:
+        m (nn.Module): 초기화를 적용할 레이어.
+    """
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
         init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
@@ -13,9 +19,30 @@ def weights_init_kaiming(m):
         init.constant_(m.bias.data, 0.0)
         
 def init_weights(net):
+    """
+    네트워크의 모든 레이어에 대해 weights_init_kaiming을 적용.
+
+    Args:
+        net (nn.Module): 초기화를 적용할 네트워크.
+
+    Returns:
+        nn.Module: 초기화된 네트워크.
+    """
     return net.apply(weights_init_kaiming)
 
 class unetConv2(nn.Module):
+    """
+    U-Net의 Convolution 블록.
+
+    Args:
+        in_size (int): 입력 채널 수.
+        out_size (int): 출력 채널 수.
+        is_batchnorm (bool): Batch Normalization 사용 여부.
+        n (int): Convolution 연산의 반복 횟수 (기본값: 2).
+        ks (int): 커널 크기 (기본값: 3).
+        stride (int): 스트라이드 크기 (기본값: 1).
+        padding (int): 패딩 크기 (기본값: 1).
+    """
     def __init__(self, in_size, out_size, is_batchnorm, n=2, ks=3, stride=1, padding=1):
         super(unetConv2, self).__init__()
         self.n = n

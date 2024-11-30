@@ -4,6 +4,17 @@ import torch.nn.functional as F
 from .layers import ChannelAttention, SpartialAttention, FusionBlock
 
 class CustomUNet(nn.Module):
+    """
+    Custom U-Net 모델.
+    
+    특징:
+        - Spatial Attention과 Channel Attention을 포함한 FusionBlock 사용.
+        - Dropout을 통해 정규화 추가.
+
+    Args:
+        in_channels (int): 입력 채널 수 (기본값: 3).
+        num_classes (int): 출력 클래스 수 (기본값: 29).
+    """
     def __init__(self, in_channels=3, num_classes=29):
         super(CustomUNet, self).__init__()
         

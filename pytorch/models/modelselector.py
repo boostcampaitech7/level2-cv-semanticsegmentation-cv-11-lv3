@@ -8,6 +8,12 @@ from .SegFormer.SegFormer import SegFormer
 from .CUSTOM.custom_unet import CustomUNet
 
 class ModelSelector():
+    """
+    모델 선택 및 초기화 클래스.
+
+    Methods:
+        get_model(model_cfg): 설정에 따라 모델을 반환.
+    """
     def __init__(self):
         self.model_list = {
             "UNet": UNet,

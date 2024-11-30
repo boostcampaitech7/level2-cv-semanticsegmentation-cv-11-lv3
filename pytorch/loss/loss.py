@@ -3,6 +3,21 @@ import torch
 import torch.nn.functional as F
 
 class FocalLoss(nn.Module):
+    """
+    Focal Loss
+
+    Args:
+        alpha (float): 양성 클래스에 대한 가중치 (기본값 0.25)
+        gamma (float): 난이도에 따라 손실을 조정하는 매개변수 (기본값 2)
+        reduction (str): 손실값 축소 방식 ('mean', 'sum', 'none')
+
+    Forward:
+        preds (torch.Tensor): 모델 예측값 (로짓 형태)
+        targets (torch.Tensor): 실제 라벨 값 (0 또는 1)
+    
+    Returns:
+        torch.Tensor: Focal Loss 값
+    """
     def __init__(self, alpha=.25, gamma=2, reduction="mean"):
         super(FocalLoss, self).__init__()
         self.alpha = alpha
@@ -19,6 +34,19 @@ class FocalLoss(nn.Module):
         return loss
     
 class DiceLoss(nn.Module):
+    """
+    Dice Loss
+
+    Args:
+        smooth (float): 분모와 분자의 0 나누기 문제를 방지하기 위한 작은 상수 (기본값 1)
+    
+    Forward:
+        preds (torch.Tensor): 모델 예측값
+        targets (torch.Tensor): 실제 라벨 값
+    
+    Returns:
+        torch.Tensor: Dice 손실 값
+    """
     def __init__(self, smooth=1.):
         super(DiceLoss, self).__init__()
         self.smooth = smooth
@@ -32,6 +60,20 @@ class DiceLoss(nn.Module):
         return loss.mean()
 
 class FocalTveskyLoss(nn.Module):
+    """
+    Focal Tversky Loss
+
+    Forward:
+        preds (torch.Tensor): 모델 예측값
+        targets (torch.Tensor): 실제 라벨 값
+        smooth (float): 안정성 값
+        alpha (float): False Positive 비중 가중치
+        beta (float): False Negative 비중 가중치
+        gamma (float): Focal Loss에서의 감쇠 계수
+
+    Returns:
+        torch.Tensor: Focal Tversky 손실 값
+    """
     def __init__(self, weight=None, size_average=True):
         super(FocalTveskyLoss, self).__init__()
 
@@ -49,6 +91,19 @@ class FocalTveskyLoss(nn.Module):
         return FocalTversky
 
 class IoULoss(nn.Module):
+    """
+    IoU Loss
+
+    Args:
+        smooth (float): 안정성 값
+    
+    Forward:
+        preds (torch.Tensor): 모델 예측값
+        targets (torch.Tensor): 실제 라벨 값
+    
+    Returns:
+        torch.Tensor: IoU 손실 값
+    """
     def __init__(self,smooth=1.):
         super(IoULoss, self).__init__()
         self.smooth = smooth
@@ -64,6 +119,20 @@ class IoULoss(nn.Module):
         return 1 - loss
     
 class CombineLoss(nn.Module):
+    """
+    여러 손실 함수를 조합하여 가중치 기반 결합 손실 계산.
+
+    Args:
+        loss_list (list): 사용할 손실 함수 리스트
+        weights (list): 각 손실 함수에 대한 가중치 리스트
+    
+    Forward:
+        preds (torch.Tensor): 모델 예측값
+        targets (torch.Tensor): 실제 라벨 값
+    
+    Returns:
+        torch.Tensor: 가중 손실 값
+    """
     def __init__(self, loss_list, weights):
         super(CombineLoss, self).__init__()
         self.loss_list = loss_list

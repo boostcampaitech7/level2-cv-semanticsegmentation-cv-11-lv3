@@ -2,6 +2,14 @@ import torch
 import torch.nn as nn
 
 class VGGBlock(nn.Module):
+    """
+    VGG 블록.
+
+    Args:
+        in_channels (int): 입력 채널 수.
+        middle_channels (int): 중간 채널 수.
+        out_channels (int): 출력 채널 수.
+    """
     def __init__(self, in_channels, middle_channels, out_channels):
         super().__init__()
         self.relu = nn.ReLU()
@@ -21,6 +29,14 @@ class VGGBlock(nn.Module):
         return x
 
 class NestedUNet(nn.Module):
+    """
+    Nested U-Net (U-Net++) 모델.
+
+    Args:
+        in_channels (int): 입력 채널 수.
+        num_classes (int): 출력 클래스 수.
+        deep_supervision (bool): Deep supervision 사용 여부
+    """
     def __init__(self, in_channels, num_classes, deep_supervision=False):
         super().__init__()
         filters = [32, 64, 128, 256, 512]

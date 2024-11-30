@@ -27,7 +27,7 @@ class EarlyStopper:
             - 카운터가 patience 값을 초과하면 early_stop 플래그를 True로 설정.
             - 점수가 개선된 경우, 최적 점수를 갱신하고 카운터를 0으로 초기화.
 
-        출력:
+        Returns:
             - self.early_stop 플래그를 통해 Early Stopping 여부를 알 수 있음.
             - verbose 옵션이 활성화된 경우, 개선 여부와 카운터 상태를 출력.
         """

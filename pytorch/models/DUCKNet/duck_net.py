@@ -1,10 +1,18 @@
 import torch
 import torch.nn as nn
 import torch.functional as F
-from models.DUCKNet.layers import conv_block_2D
+from .layers import conv_block_2D
 import torch.nn.init as init
 
 class DUCKNet(nn.Module):
+    """
+    DUCKNet 모델.
+
+    Args:
+        in_channels (int): 입력 채널 수.
+        num_classes (int): 출력 클래스 수.
+        starting_filters (int): 처음 컨볼루션 레이어의 필터 수.
+    """
     def __init__(self, in_channels, num_classes, starting_filters):
         super(DUCKNet, self).__init__()
         self.input_layer = nn.Identity()

@@ -2,6 +2,15 @@ import torch
 import torch.nn as nn
 
 class SpartialAttention(nn.Module):
+    """
+    Spatial Attention 모듈.
+    
+    입력 특성 맵의 공간적 정보를 강
+
+    Args:
+        out_channels (int): 출력 채널 수.
+        kernel_size (int): 컨볼루션 필터 크기 (기본값: 5).
+    """
     def __init__(self, out_channels, kernel_size=5):
         super(SpartialAttention, self).__init__()
         self.conv = nn.Conv2d(in_channels=2, out_channels=out_channels, kernel_size=kernel_size, padding=kernel_size//2, bias=True)
@@ -16,6 +25,15 @@ class SpartialAttention(nn.Module):
         return out
 
 class ChannelAttention(nn.Module):
+    """
+    Channel Attention 모듈.
+    
+    입력 특성 맵의 채널 정보를 강조
+
+    Args:
+        in_channels (int): 입력 채널 수.
+        reduction (int): 채널 감소율 (기본값: 16).
+    """
     def __init__(self, in_channels, reduction=16):
         super(ChannelAttention, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)  # GAP
@@ -37,6 +55,15 @@ class ChannelAttention(nn.Module):
         return x * attn
 
 class FusionBlock(nn.Module):
+    """
+    FusionBlock 모듈.
+    
+    Spatial Attention과 Channel Attention 블록의 출력 결합
+
+    Args:
+        in_channels (int): 입력 채널 수.
+        fusion_type (str): 결합 방식 ("sum" 또는 "cat", 기본값: "sum").
+    """
     def __init__(self, in_channels, fusion_type="sum"):
         super(FusionBlock, self).__init__()
         self.fusion_type = fusion_type

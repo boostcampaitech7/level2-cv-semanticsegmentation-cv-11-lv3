@@ -2,6 +2,13 @@ import torch
 import torch.nn as nn
 
 class UNet(nn.Module):
+    """
+    U-Net 모델.
+
+    Args:
+        in_channels (int): 입력 채널 수.
+        num_classes (int): 출력 클래스 수.
+    """
     def __init__(self, in_channels, num_classes):
         super(UNet,self).__init__()
         def CBR(in_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=True):

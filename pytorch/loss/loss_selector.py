@@ -2,11 +2,16 @@ from .loss import CustomBCEWithLogitsLoss, FocalLoss, DiceLoss, IoULoss, Combine
 
 class LossSelector():
     """
-    loss를 새롭게 추가하기 위한 방법
-        1. loss 폴더 내부에 사용하고자하는 custom loss 구현
-        2. 구현한 Loss Class를 loss_selector.py 내부로 import
-        3. self.loss_classes에 아래와 같은 형식으로 추가
-        4. yaml파일의 loss_name을 설정한 key값으로 변경
+    손실 함수를 동적으로 선택 및 초기화하는 클래스.
+
+    사용자가 새로운 손실 함수를 추가하려면:
+        1. `loss` 폴더 내부에 새로운 Custom Loss 클래스 구현.
+        2. 구현한 Loss Class를 이 파일(`loss_selector.py`)로 import.
+        3. `self.loss_classes` 딕셔너리에 추가 (형식: "Key": LossClass).
+        4. YAML 설정 파일에서 `loss_name`을 새로 추가한 키값으로 설정.
+
+    Attributes:
+        loss_classes (dict): 문자열 키와 손실 함수 클래스를 매핑.
     """
     def __init__(self) -> None:
         self.loss_classes = {

@@ -6,6 +6,16 @@ import numpy as np
 
 
 class UNet3Plus(nn.Module):
+    """
+    UNet3+ 모델.
+    다중 해상도 특성을 병합하여 더 정확한 세분화를 제공.
+
+    Args:
+        in_channels (int): 입력 채널 수.
+        num_classes (int): 출력 클래스 수.
+        deep_supervision (bool): DS 사용 여부 (기본값: True).
+        cgm (bool): cgm 사용 여부 (기본값: True).
+    """
     def __init__(self, in_channels, num_classes, deep_supervision=True, cgm=True):
         super(UNet3Plus, self).__init__()
         self.in_channels = in_channels
