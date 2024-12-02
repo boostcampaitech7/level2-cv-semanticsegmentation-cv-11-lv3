@@ -227,5 +227,5 @@ python3 inference.py --model {~.pt_file_path}
 <br />
 
 ## 🏅 Wrap-Up Report   
-### 
+### [ Wrap-Up Report 👑](https://github.com/boostcampaitech7/level2-cv-semanticsegmentation-cv-11-lv3/blob/main/wrap-up/CV11_Semantic_Segmentation_Wrap-Up.pdf)
 
