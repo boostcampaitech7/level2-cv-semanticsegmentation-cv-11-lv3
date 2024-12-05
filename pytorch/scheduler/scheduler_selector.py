@@ -67,19 +67,7 @@ def reduce(optimizer, **scheduler_parameter):
         torch.optim.lr_scheduler.ReduceLROnPlateau: 생성된 스케줄러
     '''
     return lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, **scheduler_parameter)
-
-def reduce(optimizer, **scheduler_parameter):
-    '''
-    ReduceLROnPlateau 스케줄러 생성
     
-    Args:
-        optimizer (torch.optim.Optimizer): 옵티마이저
-        **scheduler_parameter: 스케줄러 파라미터
-    
-    Returns:
-        torch.optim.lr_scheduler.ReduceLROnPlateau: 생성된 스케줄러
-    '''
-    return lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, **scheduler_parameter)
 class SchedulerSelector():
     """
     scheduler를 새롭게 추가하기 위한 방법
