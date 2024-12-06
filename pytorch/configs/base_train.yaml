@@ -1,0 +1,85 @@
+# data 관련 설정
+image_root: /data/ephemeral/home/train/DCM
+fold_root: /data/ephemeral/home/folds
+label_root: /data/ephemeral/home/train/outputs_json
+test_root: /data/ephemeral/home/test
+fold_list: [4,]
+
+# 앱 설정 정의
+kakao_uuid_path: /data/ephemeral/home/keys/uuid.json
+task: sumCUNet(D0.9,I0.9,B0.1,F0.4) 1024
+access_name: 이상진
+server: 4
+
+# mlflow
+exp_name: lee
+run_name: SUMCUNet
+
+# 모델명 및 사전 학습 여부
+model:
+  model_name: CustomUNet
+  model_parameter:
+    in_channels: 3
+    classes: 29
+    pretrained: True
+    start_filters: 16
+    deep_supervision: False
+    cgm: False
+
+# batch_size
+train_batch_size: 2
+val_batch_size: 2
+test_batch_size: 4
+
+
+image_size: &image_size 512
+
+# transform 관련
+transform:
+  Resize:
+    width: *image_size
+    height: *image_size
+
+# 학습 관련 하이퍼파라미터
+lr: 1e-3
+weight_decay: 1e-4
+
+max_epoch: &max_epoch 22
+
+
+early_stopping:
+  patience: 40
+  delta: 0.0001
+
+# loss 관련 설정
+loss: 
+  type: CombineLoss    #CombineLoss & None
+  loss_list: ["Dice", "IoU", "BCEL", "FocalTve"]
+  weights: [0.9, 0.9, 0.1, 0.3]
+# loss에 필요한 parameter -> dict 형태로 작성
+loss_parameter: {}
+
+# scheduler 관련 설정
+scheduler_name: Reduce
+
+# scheduler 필요한 parameter -> dict 형태로 작성
+scheduler_parameter:
+  mode: 'min'
+  factor: 0.5
+  patience: 5
+  threshold: 0.01
+  cooldown: 2
+  min_lr: 1e-6
+
+# random seed값
+seed: 21
+
+# validation 관련 인자
+val_interval: 1
+
+# checkpoint 저장 경로
+save_dir: ./checkpoints/${model.model_name}
+
+# 구글시트
+google_cloud_key_path: /data/ephemeral/home/keys/google_key.json
+
